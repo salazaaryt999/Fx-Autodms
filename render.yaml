@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: fx-automate-whatsapp
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/whatsapp/providers/status
+    envVars:
+      - key: NODE_VERSION
+        value: 22.12.0
+      - key: HOST
+        value: 0.0.0.0
+      - key: WHATSAPP_API_VERSION
+        value: v22.0
+      - key: WHATSAPP_BUSINESS_ACCOUNT_ID
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_WEBHOOK_VERIFY_TOKEN
+        generateValue: true
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      name: fx-whatsapp-data
+      mountPath: /var/data
+      sizeGB: 1

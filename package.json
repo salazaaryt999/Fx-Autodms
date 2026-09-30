@@ -1,0 +1,23 @@
+{
+  "name": "whatsapp-pro-suite-local",
+  "version": "1.0.0",
+  "description": "Local-First WhatsApp Marketing & Automation Suite with SQLite and Ollama AI",
+  "license": "MIT",
+  "main": "server.js",
+  "scripts": {
+    "build": "npm install",
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "axios": "^1.16.1",
+    "dotenv": "^17.4.2",
+    "mime": "^4.1.0",
+    "pino": "^10.3.1",
+    "qrcode": "^1.5.4"
+  }
+}

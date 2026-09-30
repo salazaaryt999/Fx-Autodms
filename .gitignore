@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Local databases and uploads
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Baileys WhatsApp Web Auth Sessions
+baileys_auth_info/
+auth_info_baileys/
+data/baileys_auth/
+qrcode.png
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+.env.vault
+
+# System and logs
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

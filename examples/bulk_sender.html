@@ -1,0 +1,3215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Web & Bulk Messenger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Natural, eye-pleasing human color palette */
+            --bg-page: #f6f8fa;
+            --bg-card: #ffffff;
+            --bg-subtle: #f0f3f6;
+            --bg-hover: #f3f5f8;
+            --border-color: #e2e8f0;
+            --border-subtle: #edf2f7;
+            --border-focus: #128c7e;
+            
+            /* WhatsApp Signature Colors */
+            --wa-green: #25d366;
+            --wa-teal: #128c7e;
+            --wa-dark-teal: #075e54;
+            --wa-light-green: #e8f8f5;
+            --wa-bubble-me: #dcf8c6;
+            
+            /* Neutral Text Colors */
+            --text-heading: #1e293b;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            
+            /* Action & Status */
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            
+            /* Smooth Rounded System */
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --radius-full: 9999px;
+            
+            /* Soft Natural Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.02);
+            --shadow-lg: 0 10px 30px -4px rgba(0, 0, 0, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            min-height: 100vh;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Top Header Navbar */
+        header.top-navbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+
+        .brand-logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+            flex-shrink: 0;
+        }
+
+        .brand-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.3px;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Nav Tab Switcher */
+        nav.nav-tabs {
+            display: flex;
+            background: var(--bg-subtle);
+            padding: 5px;
+            border-radius: var(--radius-full);
+            gap: 4px;
+        }
+
+        .nav-btn {
+            padding: 9px 22px;
+            border-radius: var(--radius-full);
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-heading);
+        }
+
+        .nav-btn.active {
+            background: #ffffff;
+            color: var(--wa-dark-teal);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            font-weight: 700;
+        }
+
+        /* Status Badge in Header */
+        .header-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .header-status-badge:hover {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-light);
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.online {
+            background: var(--wa-green);
+            box-shadow: 0 0 0 4px rgba(37, 211, 102, 0.25);
+        }
+
+        .status-dot.waiting {
+            background: var(--warning);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25);
+        }
+
+        /* Main App Container */
+        main.main-content {
+            max-width: 1060px;
+            margin: 32px auto 60px auto;
+            padding: 0 24px;
+        }
+
+        /* Content Views */
+        .content-view {
+            display: none;
+            animation: softFadeIn 0.25s ease-out;
+        }
+
+        .content-view.active {
+            display: block;
+        }
+
+        @keyframes softFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Natural Rounded Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        .card-desc {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* Form Controls & Inputs */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-heading);
+            margin-bottom: 8px;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.45;
+        }
+
+        .input-text, .select-input, .textarea-input {
+            width: 100%;
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            font-size: 14.5px;
+            color: var(--text-heading);
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-text:focus, .select-input:focus, .textarea-input:focus {
+            border-color: var(--wa-teal);
+            box-shadow: 0 0 0 3.5px rgba(18, 140, 126, 0.12);
+        }
+
+        .input-group {
+            display: flex;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: #ffffff;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--wa-teal);
+            box-shadow: 0 0 0 3.5px rgba(18, 140, 126, 0.12);
+        }
+
+        .input-group-badge {
+            background: var(--bg-subtle);
+            padding: 12px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-right: 1.5px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            user-select: none;
+        }
+
+        .input-group input {
+            flex: 1;
+            border: none;
+            padding: 12px 16px;
+            font-size: 15px;
+            color: var(--text-heading);
+            outline: none;
+            font-family: inherit;
+        }
+
+        /* Buttons with Rounded Smooth Edges */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            padding: 11px 24px;
+            border-radius: var(--radius-full);
+            font-size: 14.5px;
+            font-weight: 700;
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            font-family: inherit;
+            user-select: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(18, 140, 126, 0.25);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #22c55e, #0f766e);
+            box-shadow: 0 6px 16px rgba(18, 140, 126, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-heading);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--bg-subtle);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--danger-light);
+            border: 1.5px solid #fca5a5;
+            color: #b91c1c;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #fee2e2;
+            border-color: #f87171;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* 3 Main Login Method Tabs */
+        .login-tabs-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background: var(--bg-subtle);
+            padding: 6px;
+            border-radius: var(--radius-lg);
+            gap: 8px;
+            margin-bottom: 26px;
+        }
+
+        .login-tab-button {
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            border: 1.5px solid transparent;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+
+        .login-tab-button .tab-icon {
+            font-size: 20px;
+        }
+
+        .login-tab-button:hover {
+            color: var(--text-heading);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .login-tab-button.active {
+            background: #ffffff;
+            color: var(--wa-dark-teal);
+            border-color: var(--border-color);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+        }
+
+        /* Login Sections */
+        .login-section {
+            display: none;
+        }
+
+        .login-section.active {
+            display: block;
+            animation: softFadeIn 0.25s ease-out;
+        }
+
+        /* QR Code Container Box */
+        .qr-card-wrapper {
+            max-width: 480px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .qr-display-box {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            min-width: 290px;
+            min-height: 290px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+
+        .qr-display-box img {
+            width: 250px;
+            height: 250px;
+            display: block;
+            border-radius: var(--radius-md);
+        }
+
+        /* Pairing Code Display Card */
+        .code-display-card {
+            background: #ffffff;
+            border: 2px solid #a7f3d0;
+            border-radius: var(--radius-lg);
+            padding: 26px;
+            margin: 22px 0;
+            text-align: center;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.12);
+        }
+
+        .code-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 6px;
+            color: var(--wa-dark-teal);
+            background: var(--wa-light-green);
+            border: 2px solid #a7f3d0;
+            border-radius: var(--radius-md);
+            padding: 16px 30px;
+            display: inline-block;
+            margin-bottom: 16px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
+        }
+
+        /* Step-by-Step Instructions List */
+        .step-instruction-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 18px 22px;
+            font-size: 13.5px;
+            color: var(--text-body);
+            line-height: 1.7;
+            text-align: left;
+        }
+
+        .step-instruction-box ol {
+            padding-left: 20px;
+        }
+
+        .step-instruction-box li {
+            margin-bottom: 6px;
+        }
+
+        .step-instruction-box li:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-instruction-box strong {
+            color: var(--text-heading);
+        }
+
+        /* Connected View Card Banner */
+        .connected-banner {
+            background: linear-gradient(135deg, #e8f8f5, #d1fae5);
+            border: 2px solid #a7f3d0;
+            border-radius: var(--radius-lg);
+            padding: 26px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 22px;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .connected-info {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .connected-avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 4px 12px rgba(18, 140, 126, 0.3);
+            flex-shrink: 0;
+        }
+
+        .connected-phone {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--wa-dark-teal);
+            letter-spacing: -0.3px;
+        }
+
+        /* Composer 2-Column Grid */
+        .composer-layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+        }
+
+        @media (max-width: 920px) {
+            .composer-layout {
+                grid-template-columns: 1fr;
+            }
+            .login-tabs-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Delay Selector Chips */
+        .delay-presets-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .delay-chip {
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            background: var(--bg-subtle);
+            border: 1.5px solid var(--border-color);
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-body);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .delay-chip:hover {
+            border-color: var(--wa-teal);
+            color: var(--wa-dark-teal);
+        }
+
+        .delay-chip.active {
+            background: var(--wa-light-green);
+            border-color: var(--wa-teal);
+            color: var(--wa-dark-teal);
+            font-weight: 700;
+        }
+
+        /* Dispatch Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-heading);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* Progress Bar */
+        .progress-bar-bg {
+            background: #e2e8f0;
+            border-radius: var(--radius-full);
+            height: 10px;
+            overflow: hidden;
+            margin: 14px 0;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #25d366, #128c7e);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: var(--radius-full);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid rgba(18, 140, 126, 0.2);
+            border-top-color: var(--wa-teal);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Connection Mode Switcher */
+        .provider-switch-container {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 16px 22px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            box-shadow: var(--shadow-sm);
+            flex-wrap: wrap;
+        }
+
+        .provider-toggle-group {
+            display: flex;
+            gap: 6px;
+            background: var(--bg-subtle);
+            padding: 5px;
+            border-radius: var(--radius-full);
+            flex-wrap: wrap;
+            border: 1px solid var(--border-color);
+        }
+
+        .provider-toggle-btn {
+            border: none;
+            background: transparent;
+            padding: 9px 18px;
+            border-radius: var(--radius-full);
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+
+        .provider-toggle-btn:hover {
+            color: var(--text-heading);
+        }
+
+        .provider-toggle-btn.active {
+            background: #ffffff;
+            color: var(--wa-dark-teal);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .badge-official {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 7px;
+            border-radius: var(--radius-full);
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+            display: inline-block;
+        }
+
+        /* Radio Card Selection */
+        .provider-radio-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .provider-radio-card {
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            background: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .provider-radio-card:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .provider-radio-card.active {
+            border-color: var(--wa-teal);
+            background: var(--wa-light-green);
+        }
+
+        .provider-radio-card input[type="radio"] {
+            margin-top: 3px;
+            accent-color: var(--wa-teal);
+        }
+
+        .radio-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .radio-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        /* Copy Button & Input Actions */
+        .input-with-action {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-with-action input {
+            flex: 1;
+        }
+
+        .copy-btn {
+            padding: 9px 14px;
+            font-size: 12.5px;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-heading);
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--bg-subtle);
+            border-color: #94a3b8;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Meta Status Indicator Card */
+        .meta-status-banner {
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .meta-status-banner.connected {
+            background: #ecfdf5;
+            border: 1.5px solid #a7f3d0;
+        }
+
+        .meta-status-banner.error {
+            background: #fef2f2;
+            border: 1.5px solid #fecaca;
+        }
+
+        .meta-status-banner.warning {
+            background: #fffbeb;
+            border: 1.5px solid #fde68a;
+        }
+
+        .template-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .template-item-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .template-item-card:hover {
+            border-color: var(--wa-teal);
+            box-shadow: var(--shadow-sm);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Header -->
+    <header class="top-navbar">
+        <a href="javascript:void(0)" class="brand-container" onclick="switchView('view-connect')">
+            <div class="brand-logo-icon">💬</div>
+            <div>
+                <h1 class="brand-title">FX Automate</h1>
+                <div class="brand-subtitle">WhatsApp Web & Official Cloud API Suite</div>
+            </div>
+        </a>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-btn active" id="tabBtnConnect" data-target="view-connect" type="button">
+                <span>🔗</span> <span>Connect WhatsApp</span>
+            </button>
+            <button class="nav-btn" id="tabBtnSend" data-target="view-send" type="button">
+                <span>✉️</span> <span>Send Messages</span>
+            </button>
+            <button class="nav-btn" id="tabBtnInbox" data-target="view-inbox" type="button">
+                <span>💬</span> <span>Chats</span>
+            </button>
+            <button class="nav-btn" id="tabBtnSettings" data-target="view-settings" type="button">
+                <span>⚙️</span> <span>Settings</span>
+            </button>
+        </nav>
+
+        <!-- Live Status Pill in Header -->
+        <div class="header-status-badge" id="headerStatusBadge" title="Click to view connection status">
+            <span class="status-dot" id="headerStatusDot"></span>
+            <span id="headerStatusText">Checking connection...</span>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+        <!-- ============================================================== -->
+        <!-- VIEW 1: CONNECT WHATSAPP (3 WORKING LOGIN METHODS)             -->
+        <!-- ============================================================== -->
+        <section id="view-connect" class="content-view active">
+            
+            <!-- Connection Mode Switcher -->
+            <div class="provider-switch-container">
+                <div>
+                    <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Active Connection Mode</div>
+                    <div style="font-size:14.5px; font-weight:800; color:var(--text-heading); margin-top:2px;" id="textCurrentActiveMode">WhatsApp Web / QR (Direct Multi-Device)</div>
+                </div>
+                <div class="provider-toggle-group">
+                    <button type="button" class="provider-toggle-btn active" id="btnToggleModeWebQr">
+                        <span>📱 WhatsApp Web / QR</span>
+                        <span class="status-dot" id="dotProviderWebQr" style="width:8px; height:8px;"></span>
+                    </button>
+                    <button type="button" class="provider-toggle-btn" id="btnToggleModeCloudApi">
+                        <span>☁️ WhatsApp Cloud API</span>
+                        <span class="badge-official">Meta Official</span>
+                        <span class="status-dot" id="dotProviderCloudApi" style="width:8px; height:8px;"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANEL 1: WHATSAPP WEB / QR (BAILEYS) - PRESERVED & WORKING -->
+            <div id="panelWebQrMode">
+            
+            <!-- Connected State Banner -->
+            <div id="boxConnectedState" style="display:none; margin-bottom:24px;">
+                <div class="connected-banner">
+                    <div class="connected-info">
+                        <div class="connected-avatar">✓</div>
+                        <div>
+                            <div style="font-size:12px; font-weight:700; color:var(--wa-dark-teal); text-transform:uppercase; letter-spacing:0.5px;">WhatsApp Connected</div>
+                            <div class="connected-phone" id="displayConnectedNumber">+91 00000 00000</div>
+                            <div style="font-size:13px; color:#065f46;" id="displayConnectedName">Ready to send and receive messages</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <button class="btn btn-primary" id="btnGoToCompose" type="button">
+                            <span>✉️ Start Sending Messages</span>
+                        </button>
+                        <button class="btn btn-danger" id="btnDisconnectSession" type="button">
+                            <span>🔌 Disconnect / Switch Account</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Setup Card -->
+            <div class="card" id="boxLoginForms">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Link Your WhatsApp Account</h2>
+                        <p class="card-desc">Choose any of the 3 simple methods below. Works with all phone numbers worldwide.</p>
+                    </div>
+                </div>
+
+                <!-- 3 Clear Rounded Login Method Tabs -->
+                <div class="login-tabs-container">
+                    <button class="login-tab-button active" id="btnMethodQr" type="button">
+                        <span class="tab-icon">📷</span>
+                        <span>1. Scan QR Code</span>
+                    </button>
+                    <button class="login-tab-button" id="btnMethodPairing" type="button">
+                        <span class="tab-icon">📱</span>
+                        <span>2. Get Pairing Code</span>
+                    </button>
+                    <button class="login-tab-button" id="btnMethodVerify" type="button">
+                        <span class="tab-icon">🔢</span>
+                        <span>3. Enter Code / SMS</span>
+                    </button>
+                </div>
+
+                <!-- ========================================================== -->
+                <!-- METHOD 1: QR CODE LOGIN                                    -->
+                <!-- ========================================================== -->
+                <div class="login-section active" id="secMethodQr">
+                    <div class="qr-card-wrapper">
+                        
+                        <div class="qr-display-box" id="qrContainerBox">
+                            <!-- Loading / Generating State -->
+                            <div id="qrLoadingState" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; min-height:240px;">
+                                <div class="spinner" style="width:36px; height:36px; border-width:3px;"></div>
+                                <span style="font-size:14px; color:var(--text-muted); font-weight:600;" id="textQrLoading">Generating fresh QR code...</span>
+                            </div>
+
+                            <!-- Live QR Code Image -->
+                            <img id="qrImageElement" src="" alt="WhatsApp QR Code" style="display:none;" />
+                        </div>
+
+                        <div style="margin-bottom:22px;">
+                            <button class="btn btn-secondary" id="btnRefreshQr" type="button">
+                                <span>🔄 Generate New QR Code</span>
+                            </button>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="step-instruction-box">
+                            <strong style="display:block; margin-bottom:8px; font-size:14px; color:var(--text-heading);">How to link using QR Code:</strong>
+                            <ol>
+                                <li>Open <strong>WhatsApp</strong> on your mobile phone</li>
+                                <li>Tap <strong>Settings</strong> (iPhone) or <strong>⋮ Menu</strong> (Android)</li>
+                                <li>Tap <strong>Linked Devices</strong> → <strong>Link a Device</strong></li>
+                                <li>Point your phone camera at the QR code above</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================================== -->
+                <!-- METHOD 2: PHONE PAIRING CODE (GET CODE ON SCREEN)          -->
+                <!-- ========================================================== -->
+                <div class="login-section" id="secMethodPairing" style="max-width:540px; margin:0 auto;">
+                    
+                    <div class="form-group">
+                        <label class="form-label">Select Country / Region</label>
+                        <select class="select-input" id="selectCountryPairing"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone Number (Without leading zero)</label>
+                        <div class="input-group">
+                            <span class="input-group-badge" id="badgeDialPairing">+91</span>
+                            <input type="tel" id="inputPhonePairing" placeholder="e.g. 98765 43210 or 555 123 4567" />
+                        </div>
+                        <p class="form-hint">Destination Phone: <strong id="previewPhonePairing" style="color:var(--wa-dark-teal);">+91</strong></p>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" id="btnRequestPairingCode" type="button" style="padding:13px 24px; font-size:15px;">
+                        <span>🔑 Generate 8-Digit Pairing Code</span>
+                    </button>
+
+                    <!-- Pairing Code Display Box -->
+                    <div id="boxPairingResult" style="display:none;" class="code-display-card">
+                        <div style="font-size:13px; font-weight:700; color:var(--wa-dark-teal); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">
+                            Enter this 8-character code on your WhatsApp app:
+                        </div>
+                        <div class="code-text" id="displayPairingCode">---- - ----</div>
+                        <div>
+                            <button class="btn btn-secondary" id="btnCopyPairingCode" type="button" style="padding:8px 22px; font-size:13.5px;">
+                                📋 Copy Code
+                            </button>
+                        </div>
+                        <div style="margin-top:16px; display:flex; align-items:center; justify-content:center; gap:10px; font-size:13.5px; color:var(--text-body);">
+                            <span class="spinner" style="width:16px; height:16px;"></span>
+                            <span id="textPairingStatus">Waiting for confirmation on your phone...</span>
+                        </div>
+                    </div>
+
+                    <!-- Steps for Pairing Code -->
+                    <div class="step-instruction-box" style="margin-top:24px;">
+                        <strong style="display:block; margin-bottom:8px; font-size:14px; color:var(--text-heading);">How to link with Pairing Code:</strong>
+                        <ol>
+                            <li>Click <strong>Generate 8-Digit Pairing Code</strong> above</li>
+                            <li>Open <strong>WhatsApp</strong> on your phone</li>
+                            <li>Tap <strong>Settings</strong> (iPhone) or <strong>⋮ Menu</strong> (Android) → <strong>Linked Devices</strong></li>
+                            <li>Tap <strong>Link a Device</strong></li>
+                            <li>Tap <strong>"Link with phone number instead"</strong> at the bottom of the camera screen</li>
+                            <li>Type the 8-character code shown on this screen</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- ========================================================== -->
+                <!-- METHOD 3: ENTER CODE DIRECTLY (VERIFICATION / SMS)         -->
+                <!-- ========================================================== -->
+                <div class="login-section" id="secMethodVerify" style="max-width:540px; margin:0 auto;">
+                    
+                    <!-- Notice about SMS OTP vs Pairing Code -->
+                    <div style="background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:var(--radius-md); padding:16px 20px; margin-bottom:20px; font-size:13.5px; color:#1e40af; line-height:1.6;">
+                        <strong style="display:flex; align-items:center; gap:6px; color:#1e3a8a; font-size:14px; margin-bottom:6px;">
+                            <span>💡</span> How WhatsApp Web Verification Works
+                        </strong>
+                        <p style="margin-bottom:8px;">
+                            WhatsApp does <strong>not send SMS text message OTPs</strong> to link WhatsApp Web (to prevent SIM-swap attacks).
+                        </p>
+                        <p style="margin-bottom:12px;">
+                            Instead, WhatsApp uses <strong>Method 2 (Phone Pairing Code)</strong>: you enter your number, get an 8-character code, and type it into WhatsApp on your phone to link securely.
+                        </p>
+                        <button type="button" class="btn btn-secondary" id="btnSwitchToPairing" style="padding:7px 18px; font-size:13px; background:#ffffff; color:#1d4ed8; border-color:#93c5fd;">
+                            <span>📱 Switch to Method 2: Get Pairing Code</span>
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Select Country / Region</label>
+                        <select class="select-input" id="selectCountryVerify"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone Number (Without leading zero)</label>
+                        <div class="input-group">
+                            <span class="input-group-badge" id="badgeDialVerify">+91</span>
+                            <input type="tel" id="inputPhoneVerify" placeholder="e.g. 98765 43210" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">8-Character Verification / Link Code</label>
+                        <input type="text" class="input-text" id="inputDirectCode" maxlength="9" placeholder="e.g. ABCD-EFGH" style="font-family:'JetBrains Mono', monospace; font-size:18px; font-weight:700; letter-spacing:4px; text-transform:uppercase; text-align:center;" />
+                        <p class="form-hint">If you have an 8-character code (letters and numbers), enter it here to link.</p>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" id="btnSubmitVerificationCode" type="button" style="padding:13px 24px; font-size:15px;">
+                        <span>✅ Verify & Link WhatsApp</span>
+                    </button>
+
+                    <div id="boxVerifyFeedback" style="display:none; margin-top:18px; padding:14px 18px; background:var(--wa-light-green); border:1.5px solid #a7f3d0; border-radius:var(--radius-md); font-size:13.5px; color:var(--wa-dark-teal); align-items:center; gap:12px;">
+                        <span class="spinner" style="width:18px; height:18px;"></span>
+                        <span id="textVerifyFeedback">Connecting to WhatsApp...</span>
+                    </div>
+
+                    <div class="step-instruction-box" style="margin-top:24px;">
+                        <strong style="display:block; margin-bottom:8px; font-size:14px; color:var(--text-heading);">Direct Code Verification:</strong>
+                        <p style="font-size:13px; color:var(--text-body);">
+                            If you already have a pairing code or custom link code, enter your phone number and the 8-character code above to complete linking directly.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+            </div> <!-- /#panelWebQrMode -->
+
+            <!-- PANEL 2: WHATSAPP CLOUD API (OFFICIAL META GRAPH API) -->
+            <div id="panelCloudApiMode" style="display:none;">
+                <!-- Meta Cloud API Overview Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Official Meta WhatsApp Cloud API</h2>
+                            <p class="card-desc">Direct enterprise messaging infrastructure hosted on Meta's official Graph API.</p>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <button type="button" class="btn btn-secondary" id="btnConnectTestCloud" style="padding:8px 16px; font-size:13px;">
+                                <span>⚡ Test Connection</span>
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="switchView('view-settings')" style="padding:8px 16px; font-size:13px;">
+                                <span>⚙️ Configure Credentials</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btnConnectDisconnectCloud" style="padding:8px 16px; font-size:13px; color:#b91c1c; border-color:#fca5a5;">
+                                <span>🔌 Disconnect</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Meta Status Banner -->
+                    <div class="meta-status-banner warning" id="bannerMetaStatus">
+                        <div style="display:flex; align-items:center; gap:14px;">
+                            <div style="font-size:24px;" id="iconMetaStatus">🟡</div>
+                            <div>
+                                <div style="font-weight:800; font-size:14.5px; color:var(--text-heading);" id="titleMetaStatus">Checking Meta Cloud API Connection...</div>
+                                <div style="font-size:13px; color:var(--text-muted); margin-top:2px;" id="descMetaStatus">Verifying Phone Number ID and Access Token with Meta Graph API</div>
+                            </div>
+                        </div>
+                        <div id="metaStatusPills" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+                    </div>
+
+                    <!-- Account Details Grid -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:14px; margin-bottom:20px;">
+                        <div style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
+                            <div style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Verified Business</div>
+                            <div style="font-size:15px; font-weight:700; color:var(--text-heading); margin-top:4px;" id="displayCloudVerifiedName">—</div>
+                        </div>
+                        <div style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
+                            <div style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Display Phone Number</div>
+                            <div style="font-size:15px; font-weight:700; color:var(--text-heading); margin-top:4px;" id="displayCloudPhoneNumber">—</div>
+                        </div>
+                        <div style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
+                            <div style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Quality Rating</div>
+                            <div style="font-size:15px; font-weight:700; color:var(--text-heading); margin-top:4px;" id="displayCloudQuality">—</div>
+                        </div>
+                        <div style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px;">
+                            <div style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Phone Number ID</div>
+                            <div style="font-size:14px; font-weight:700; font-family:'JetBrains Mono', monospace; color:var(--text-muted); margin-top:4px;" id="displayCloudPhoneId">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Webhook Quick Setup Info Box -->
+                    <div style="background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:16px 18px; margin-bottom:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                            <strong style="font-size:14px; color:var(--text-heading); display:flex; align-items:center; gap:8px;">
+                                <span>🔗</span> Meta Webhook Configuration
+                            </strong>
+                            <span class="badge-official">Real-time Delivery Receipts</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin-bottom:12px;">
+                            <div>
+                                <label class="form-label" style="font-size:12px;">Callback URL</label>
+                                <div class="input-with-action">
+                                    <input type="text" class="input-text" id="quickWebhookUrl" readonly style="font-size:13px; font-family:'JetBrains Mono', monospace; background:#fff;" />
+                                    <button type="button" class="copy-btn" id="btnCopyQuickUrl">📋 Copy URL</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size:12px;">Verify Token</label>
+                                <div class="input-with-action">
+                                    <input type="password" class="input-text" id="quickVerifyToken" readonly style="font-size:13px; font-family:'JetBrains Mono', monospace; background:#fff;" />
+                                    <button type="button" class="copy-btn" id="btnToggleQuickToken" style="padding:0 8px;" title="Show / Hide Token">👁️</button>
+                                    <button type="button" class="copy-btn" id="btnCopyQuickToken">📋 Copy Token</button>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="form-hint" style="margin:0;">Paste these into Meta Developer Portal &gt; WhatsApp &gt; Configuration &gt; Callback URL, then subscribe to the <strong>messages</strong> field.</p>
+                    </div>
+
+                    <!-- Approved Meta Templates Section -->
+                    <div style="border-top:1px solid var(--border-subtle); padding-top:20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+                            <div>
+                                <h3 style="font-size:15px; font-weight:700; color:var(--text-heading);">Approved Message Templates</h3>
+                                <p style="font-size:12.5px; color:var(--text-muted);">Templates approved by Meta for this WhatsApp Business Account</p>
+                            </div>
+                            <button type="button" class="btn btn-secondary" id="btnRefreshTemplatesOverview" style="padding:6px 14px; font-size:12px;">
+                                <span>🔄 Fetch Templates from Meta</span>
+                            </button>
+                        </div>
+                        <div id="containerMetaTemplates" class="template-cards-grid">
+                            <div style="grid-column:1/-1; text-align:center; padding:24px; color:var(--text-muted); font-size:13.5px;">Click "Fetch Templates" to load approved templates from your WhatsApp Business Account.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 2: SEND MESSAGES (BULK & SINGLE WITH CUSTOM DELAY SECONDS)-->
+        <!-- ============================================================== -->
+        <section id="view-send" class="content-view">
+            <div class="composer-layout">
+                
+                <!-- Left: Composer Form -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2 class="card-title">Compose & Dispatch</h2>
+                                <p class="card-desc">Choose delivery provider, type your message, and set delivery interval.</p>
+                            </div>
+                        </div>
+
+                        <!-- Provider Selection for Campaign -->
+                        <div class="form-group" style="background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:14px 16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                                <label class="form-label" style="margin-bottom:0; font-weight:700; color:var(--text-heading);">
+                                    📡 Dispatch Provider
+                                </label>
+                                <span id="badgeActiveProviderNotice" style="font-size:12px; font-weight:700; color:var(--wa-dark-teal); background:var(--wa-light-green); padding:3px 10px; border-radius:var(--radius-full);">Active: Web / QR</span>
+                            </div>
+                            <div class="provider-radio-group">
+                                <label class="provider-radio-card active" id="lblProviderWebQr">
+                                    <input type="radio" name="campaignProvider" value="web_qr" id="radioProviderWebQr" checked />
+                                    <div class="radio-content">
+                                        <span class="radio-icon">📱</span>
+                                        <div>
+                                            <strong style="display:block; font-size:13.5px; color:var(--text-heading);">WhatsApp Web / QR</strong>
+                                            <span style="font-size:12px; color:var(--text-muted);">Direct session via linked phone</span>
+                                        </div>
+                                    </div>
+                                </label>
+                                <label class="provider-radio-card" id="lblProviderCloudApi">
+                                    <input type="radio" name="campaignProvider" value="cloud_api" id="radioProviderCloudApi" />
+                                    <div class="radio-content">
+                                        <span class="radio-icon">☁️</span>
+                                        <div>
+                                            <strong style="display:block; font-size:13.5px; color:var(--text-heading);">WhatsApp Cloud API <span class="badge-official">Meta Official</span></strong>
+                                            <span style="font-size:12px; color:var(--text-muted);">Meta Graph API with webhooks</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Cloud API Approved Templates Selector (Shown when Cloud API is selected) -->
+                        <div id="boxCloudTemplateSelect" class="form-group" style="display:none; background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:var(--radius-md); padding:14px 16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                                <label class="form-label" style="margin-bottom:0; font-weight:700; color:#166534;">
+                                    📋 Approved Meta Templates (Optional)
+                                </label>
+                                <button type="button" class="btn btn-secondary" id="btnRefreshMetaTemplates" style="padding:4px 10px; font-size:11.5px;">🔄 Refresh Templates</button>
+                            </div>
+                            <select id="selectMetaTemplate" class="input-text" style="width:100%; padding:8px 12px; font-size:13.5px; background:#fff;">
+                                <option value="">-- Custom Text Message (Standard) --</option>
+                            </select>
+                            <p class="form-hint" style="color:#15803d; margin-top:6px;">Select an approved template from your Meta WABA to auto-fill the message body.</p>
+                        </div>
+
+                        <!-- Recipients Input -->
+                        <div class="form-group">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <label class="form-label" style="margin-bottom:0;">Recipient Phone Numbers</label>
+                                <span style="font-size:12.5px; font-weight:700; color:var(--wa-dark-teal); background:var(--wa-light-green); padding:3px 10px; border-radius:var(--radius-full);" id="badgeRecipientCount">0 recipients</span>
+                            </div>
+                            <textarea class="textarea-input" id="inputRecipients" rows="5" placeholder="Enter recipient numbers with country code (one per line or comma-separated)&#10;e.g.&#10;+15551234567&#10;919876543210&#10;447123456789"></textarea>
+                            <p class="form-hint">Tip: Paste any list of numbers. Leading country codes are automatically detected.</p>
+                        </div>
+
+                        <!-- Message Text Input -->
+                        <div class="form-group">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <label class="form-label" style="margin-bottom:0;">Message Text</label>
+                                <span style="font-size:12px; color:var(--text-muted);" id="badgeCharCount">0 characters</span>
+                            </div>
+                            <textarea class="textarea-input" id="inputMessageText" rows="6" placeholder="Hello! Type your WhatsApp message here..."></textarea>
+                        </div>
+
+                        <!-- Image Attachment Upload -->
+                        <div class="form-group">
+                            <label class="form-label">Attach Image (Optional)</label>
+                            <input type="file" id="inputFileAttachment" accept="image/*" style="font-size:13.5px;" />
+                            <div id="imagePreviewCard" style="display:none; margin-top:12px; align-items:center; gap:14px; background:var(--bg-subtle); border:1px solid var(--border-color); padding:10px 14px; border-radius:var(--radius-md);">
+                                <img id="imagePreviewThumb" src="" alt="Thumbnail" style="width:48px; height:48px; object-fit:cover; border-radius:8px;" />
+                                <span id="imagePreviewName" style="font-size:13.5px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">image.png</span>
+                                <button type="button" class="btn btn-secondary" id="btnRemoveAttachment" style="padding:6px 12px; font-size:12px;">Remove</button>
+                            </div>
+                        </div>
+
+                        <!-- Delay Between Messages (Seconds) Control -->
+                        <div class="form-group" style="background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:16px 18px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <label class="form-label" style="margin-bottom:0; font-weight:700; color:var(--text-heading);">
+                                    ⏱️ Delay Between Messages (Seconds)
+                                </label>
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <input type="number" id="inputDelaySeconds" class="input-text" min="1" max="120" value="3" style="width:70px; padding:6px 10px; font-size:14px; font-weight:700; text-align:center;" />
+                                    <span style="font-size:13px; font-weight:700; color:var(--text-muted);">seconds</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Preset Buttons -->
+                            <div class="delay-presets-container">
+                                <button type="button" class="delay-chip" data-sec="1">⚡ 1s (Fast)</button>
+                                <button type="button" class="delay-chip active" data-sec="3">🛡️ 3s (Recommended)</button>
+                                <button type="button" class="delay-chip" data-sec="5">🌿 5s (Safe)</button>
+                                <button type="button" class="delay-chip" data-sec="10">🔒 10s (Anti-Ban)</button>
+                            </div>
+
+                            <p class="form-hint" style="margin-top:8px;">
+                                💡 Waits <strong id="previewDelayText">3 seconds</strong> after sending to each person before sending to the next. Keeps delivery natural and protects your account.
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div style="display:flex; gap:14px; align-items:center; margin-top:24px; flex-wrap:wrap;">
+                            <button class="btn btn-primary" id="btnStartCampaign" type="button" style="padding:13px 32px; font-size:15px;">
+                                <span>🚀 Send Message Campaign</span>
+                            </button>
+                            <span id="sendErrorNotice" style="color:var(--danger); font-size:13.5px; font-weight:600; display:none;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Live Dispatch Status -->
+                <div>
+                    <div class="card">
+                        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                            <div>
+                                <h2 class="card-title">Live Dispatch Status</h2>
+                                <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                                    <span id="badgeCampaignState" style="display:none; font-size:11px; font-weight:800; padding:2px 10px; border-radius:var(--radius-full); text-transform:uppercase; letter-spacing:0.5px;">IDLE</span>
+                                    <span id="campaignNameDisplay" style="font-size:12.5px; color:var(--text-muted); font-weight:600;">No active campaign</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <button class="btn btn-danger" id="btnStopCampaign" type="button" style="display:none; padding:8px 16px; font-size:13px;" title="Pause current campaign">
+                                    <span>⏸️ Stop / Pause</span>
+                                </button>
+                                <button class="btn btn-primary" id="btnResumeCampaign" type="button" style="display:none; padding:8px 16px; font-size:13px;" title="Resume sending">
+                                    <span>▶️ Resume</span>
+                                </button>
+                                <button class="btn btn-secondary" id="btnCancelCampaign" type="button" style="display:none; padding:8px 14px; font-size:12.5px; color:#b91c1c; border-color:#fca5a5;" title="Cancel remaining messages">
+                                    <span>⏹️ Cancel</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid" style="grid-template-columns:repeat(5, 1fr);">
+                            <div class="stat-card">
+                                <div class="stat-number" id="statTotal">0</div>
+                                <div class="stat-label">Total</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="statSent" style="color:#059669;">0</div>
+                                <div class="stat-label">Sent</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="statDelivered" style="color:#0284c7;">0</div>
+                                <div class="stat-label">Delivered</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="statFailed" style="color:var(--danger);">0</div>
+                                <div class="stat-label">Failed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="statRemaining">0</div>
+                                <div class="stat-label">Pending</div>
+                            </div>
+                        </div>
+
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progressBarFill"></div>
+                        </div>
+
+                        <div style="font-size:13px; color:var(--text-muted); margin-bottom:14px; font-weight:500;" id="textProgressStatus">
+                            Idle — ready to dispatch messages.
+                        </div>
+
+                        <div style="max-height:280px; overflow-y:auto; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; background:#f8fafc; font-size:12.5px; font-family:'JetBrains Mono', monospace;" id="boxLiveLogs">
+                            <div style="color:var(--text-muted);">No active campaign running.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 3: INBOX & RECENT CHATS                                   -->
+        <!-- ============================================================== -->
+        <section id="view-inbox" class="content-view">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">WhatsApp Chats & Inbox</h2>
+                        <p class="card-desc">Browse ongoing conversations and reply instantly.</p>
+                    </div>
+                    <button class="btn btn-secondary" id="btnRefreshInbox" type="button" style="padding:7px 16px; font-size:13px;">
+                        <span>🔄 Refresh Chats</span>
+                    </button>
+                </div>
+
+                <div style="display:grid; grid-template-columns:320px 1fr; gap:16px; min-height:460px; border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden;">
+                    
+                    <!-- Chat List Column -->
+                    <div style="border-right:1px solid var(--border-color); background:#ffffff; overflow-y:auto; max-height:520px;" id="boxChatList">
+                        <div style="padding:24px; text-align:center; color:var(--text-muted); font-size:13.5px;">
+                            Loading conversations...
+                        </div>
+                    </div>
+
+                    <!-- Active Chat Conversation -->
+                    <div style="display:flex; flex-direction:column; background:#efeae2; background-image:radial-gradient(rgba(0,0,0,0.03) 1px, transparent 1px); background-size:16px 16px;">
+                        <div style="padding:14px 20px; border-bottom:1px solid var(--border-color); background:#ffffff; font-weight:700; font-size:14.5px; color:var(--text-heading);" id="boxChatTitle">
+                            Select a conversation
+                        </div>
+                        <div style="flex:1; padding:20px; overflow-y:auto; max-height:400px; display:flex; flex-direction:column; gap:10px;" id="boxChatMessages">
+                            <div style="color:var(--text-muted); font-size:13.5px; text-align:center; margin-top:80px;">
+                                Click any conversation on the left to view messages.
+                            </div>
+                        </div>
+                        <div style="padding:14px; background:#ffffff; border-top:1px solid var(--border-color); display:flex; gap:10px;" id="boxChatInputArea">
+                            <input type="text" class="input-text" id="inputChatReply" placeholder="Type a message reply..." style="padding:10px 14px; font-size:14px;" />
+                            <button class="btn btn-primary" id="btnSendChatReply" type="button" style="padding:10px 22px; font-size:14px;">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 4: SETTINGS → WHATSAPP CLOUD API                          -->
+        <!-- ============================================================== -->
+        <section id="view-settings" class="content-view">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Settings → WhatsApp Cloud API</h2>
+                        <p class="card-desc">Configure official Meta credentials, secure access token storage, and webhook verification.</p>
+                    </div>
+                </div>
+
+                <!-- Guidance Info Box -->
+                <div style="background:var(--wa-light-green); border:1px solid #bbf7d0; border-radius:var(--radius-md); padding:16px 18px; margin-bottom:24px;">
+                    <div style="display:flex; gap:12px; align-items:flex-start;">
+                        <span style="font-size:22px; line-height:1;">🔒</span>
+                        <div>
+                            <strong style="color:var(--wa-dark-teal); font-size:14px; display:block; margin-bottom:4px;">Secure Backend Storage</strong>
+                            <p style="font-size:13px; color:#065f46; margin:0; line-height:1.5;">Your Meta Access Token is encrypted and saved directly in your private server SQLite database. It is <strong>never</strong> exposed in client JavaScript, API responses, or browser localStorage.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meta Credentials Form -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:18px; margin-bottom:20px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">WhatsApp Business Account ID (WABA ID) <span style="color:var(--danger)">*</span></label>
+                        <input type="text" class="input-text" id="inputSettingsWabaId" placeholder="e.g. 109876543210987" />
+                        <p class="form-hint">Found under WhatsApp &gt; API Setup in Meta Developer Portal</p>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Phone Number ID <span style="color:var(--danger)">*</span></label>
+                        <input type="text" class="input-text" id="inputSettingsPhoneId" placeholder="e.g. 102938475610293" />
+                        <p class="form-hint">Found under Phone Number ID in Meta Developer Portal</p>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0; grid-column:1/-1;">
+                        <label class="form-label">System User Access Token <span style="color:var(--danger)">*</span></label>
+                        <div class="input-with-action">
+                            <input type="password" class="input-text" id="inputSettingsAccessToken" placeholder="Paste your Meta System User Access Token (EAAB...)" />
+                            <button type="button" class="copy-btn" id="btnToggleTokenVisibility">👁️ Show</button>
+                        </div>
+                        <p class="form-hint" id="tokenNoticeText">Generate a permanent System User Token with <code>whatsapp_business_messaging</code> and <code>whatsapp_business_management</code> permissions.</p>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Meta Graph API Version</label>
+                        <select class="input-text" id="selectSettingsApiVersion" style="width:100%; padding:10px 14px;">
+                            <option value="v22.0">v22.0 (Latest Official)</option>
+                            <option value="v21.0">v21.0</option>
+                            <option value="v20.0">v20.0</option>
+                        </select>
+                        <p class="form-hint">Official Meta WhatsApp Cloud API version</p>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Default Connection Mode</label>
+                        <select class="input-text" id="selectSettingsDefaultProvider" style="width:100%; padding:10px 14px;">
+                            <option value="cloud_api">WhatsApp Cloud API (Official Meta)</option>
+                            <option value="web_qr">WhatsApp Web / QR (Direct Multi-Device)</option>
+                        </select>
+                        <p class="form-hint">Default transport provider for new campaigns</p>
+                    </div>
+                </div>
+
+                <!-- Form Action Buttons: [Test Connection] [Save] [Disconnect] -->
+                <div style="display:flex; gap:12px; align-items:center; margin-bottom:24px; flex-wrap:wrap;">
+                    <button type="button" class="btn btn-secondary" id="btnTestSettingsConnection" style="padding:12px 24px; font-size:14.5px;">
+                        <span>⚡ Test Connection</span>
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btnSaveCloudSettings" style="padding:12px 28px; font-size:14.5px;">
+                        <span>💾 Save</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="btnDisconnectCloud" style="padding:12px 22px; font-size:14.5px; color:#b91c1c; border-color:#fca5a5;">
+                        <span>🔌 Disconnect</span>
+                    </button>
+                    <span id="saveSettingsFeedback" style="font-size:13.5px; font-weight:700; display:none;"></span>
+                </div>
+
+                <!-- Live Test Connection Output Banner -->
+                <div id="boxSettingsTestResult" style="display:none; margin-bottom:28px; border-radius:var(--radius-md); padding:16px 20px;"></div>
+
+                <!-- Webhook Setup Section -->
+                <div style="border-top:1px solid var(--border-subtle); padding-top:24px;">
+                    <div style="margin-bottom:16px;">
+                        <h3 style="font-size:16px; font-weight:700; color:var(--text-heading); display:flex; align-items:center; gap:8px;">
+                            <span>📡</span> Webhook Verification & Configuration
+                        </h3>
+                        <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">Meta sends real-time message delivery receipts (Delivered, Read, Failed) and incoming chats to this endpoint.</p>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:18px; margin-bottom:18px;">
+                        <div>
+                            <label class="form-label">Callback URL <span class="badge-official">Paste into Meta</span></label>
+                            <div class="input-with-action">
+                                <input type="text" class="input-text" id="inputSettingsCallbackUrl" readonly style="font-family:'JetBrains Mono', monospace; font-size:13px; background:#f8fafc;" />
+                                <button type="button" class="copy-btn" id="btnCopySettingsUrl">📋 Copy URL</button>
+                            </div>
+                            <p class="form-hint">For localhost testing, use your public tunnel URL (e.g. ngrok or Cloudflare tunnel).</p>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Verify Token <span class="badge-official">Paste into Meta</span></label>
+                            <div class="input-with-action">
+                                <input type="password" class="input-text" id="inputSettingsVerifyToken" readonly style="font-family:'JetBrains Mono', monospace; font-size:13px; background:#f8fafc;" />
+                                <button type="button" class="copy-btn" id="btnToggleSettingsVerifyToken" style="padding:0 8px;" title="Show / Hide Token">👁️</button>
+                                <button type="button" class="copy-btn" id="btnCopySettingsToken">📋 Copy Token</button>
+                                <button type="button" class="btn btn-secondary" id="btnRegenerateToken" style="padding:9px 12px; font-size:12px;" title="Generate new secure token">🔄 New</button>
+                            </div>
+                            <p class="form-hint">Secure random token (rendered as ********) checked by GET /api/whatsapp/webhook</p>
+                        </div>
+                    </div>
+
+                    <!-- Step-by-Step Meta Setup Guide -->
+                    <div style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:16px 20px;">
+                        <strong style="display:block; margin-bottom:8px; font-size:13.5px; color:var(--text-heading);">Step-by-Step Meta Webhook Instructions:</strong>
+                        <ol style="margin-left:20px; font-size:13px; color:var(--text-body); line-height:1.7;">
+                            <li>Log in to <a href="https://developers.facebook.com/apps/" target="_blank" style="color:var(--wa-dark-teal); font-weight:700;">Meta for Developers</a> and select your App.</li>
+                            <li>In the left sidebar, navigate to <strong>WhatsApp &gt; Configuration</strong>.</li>
+                            <li>Locate the <strong>Callback URL</strong> section and click <strong>Edit</strong>.</li>
+                            <li>Paste the <strong>Callback URL</strong> and <strong>Verify Token</strong> shown above.</li>
+                            <li>Click <strong>Verify and Save</strong>. Meta will send a GET handshake request to your endpoint and verify it instantly!</li>
+                            <li>Under <strong>Webhook fields</strong>, click <strong>Manage</strong>, find <strong>messages</strong>, and click <strong>Subscribe</strong>.</li>
+                        </ol>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Client Logic -->
+    <script>
+        // =====================================================================
+        // 1. WORLD COUNTRIES LIST (ALL NATIONS SUPPORTED)
+        // =====================================================================
+        const WORLD_COUNTRIES = [
+            { code: 'IN', dial: '91', name: 'India', flag: '🇮🇳' },
+            { code: 'US', dial: '1', name: 'United States', flag: '🇺🇸' },
+            { code: 'GB', dial: '44', name: 'United Kingdom', flag: '🇬🇧' },
+            { code: 'CA', dial: '1', name: 'Canada', flag: '🇨🇦' },
+            { code: 'AE', dial: '971', name: 'United Arab Emirates', flag: '🇦🇪' },
+            { code: 'SA', dial: '966', name: 'Saudi Arabia', flag: '🇸🇦' },
+            { code: 'NG', dial: '234', name: 'Nigeria', flag: '🇳🇬' },
+            { code: 'PK', dial: '92', name: 'Pakistan', flag: '🇵🇰' },
+            { code: 'BD', dial: '880', name: 'Bangladesh', flag: '🇧🇩' },
+            { code: 'ID', dial: '62', name: 'Indonesia', flag: '🇮🇩' },
+            { code: 'AU', dial: '61', name: 'Australia', flag: '🇦🇺' },
+            { code: 'DE', dial: '49', name: 'Germany', flag: '🇩🇪' },
+            { code: 'FR', dial: '33', name: 'France', flag: '🇫🇷' },
+            { code: 'BR', dial: '55', name: 'Brazil', flag: '🇧🇷' },
+            { code: 'ES', dial: '34', name: 'Spain', flag: '🇪🇸' },
+            { code: 'IT', dial: '39', name: 'Italy', flag: '🇮🇹' },
+            { code: 'ZA', dial: '27', name: 'South Africa', flag: '🇿🇦' },
+            { code: 'MX', dial: '52', name: 'Mexico', flag: '🇲🇽' },
+            { code: 'PH', dial: '63', name: 'Philippines', flag: '🇵🇭' },
+            { code: 'MY', dial: '60', name: 'Malaysia', flag: '🇲🇾' },
+            { code: 'SG', dial: '65', name: 'Singapore', flag: '🇸🇬' },
+            { code: 'EG', dial: '20', name: 'Egypt', flag: '🇪🇬' },
+            { code: 'KE', dial: '254', name: 'Kenya', flag: '🇰🇪' },
+            { code: 'GH', dial: '233', name: 'Ghana', flag: '🇬🇭' },
+            { code: 'TR', dial: '90', name: 'Turkey', flag: '🇹🇷' },
+            { code: 'RU', dial: '7', name: 'Russia', flag: '🇷🇺' },
+            { code: 'JP', dial: '81', name: 'Japan', flag: '🇯🇵' },
+            { code: 'KR', dial: '82', name: 'South Korea', flag: '🇰🇷' },
+            { code: 'NL', dial: '31', name: 'Netherlands', flag: '🇳🇱' },
+            { code: 'CH', dial: '41', name: 'Switzerland', flag: '🇨🇭' },
+            { code: 'SE', dial: '46', name: 'Sweden', flag: '🇸🇪' },
+            { code: 'NO', dial: '47', name: 'Norway', flag: '🇳🇴' },
+            { code: 'NZ', dial: '64', name: 'New Zealand', flag: '🇳🇿' },
+            { code: 'IE', dial: '353', name: 'Ireland', flag: '🇮🇪' },
+            { code: 'PT', dial: '351', name: 'Portugal', flag: '🇵🇹' },
+            { code: 'QA', dial: '974', name: 'Qatar', flag: '🇶🇦' },
+            { code: 'KW', dial: '965', name: 'Kuwait', flag: '🇰🇼' },
+            { code: 'OM', dial: '968', name: 'Oman', flag: '🇴🇲' },
+            { code: 'BH', dial: '973', name: 'Bahrain', flag: '🇧🇭' },
+            { code: 'NP', dial: '977', name: 'Nepal', flag: '🇳🇵' },
+            { code: 'LK', dial: '94', name: 'Sri Lanka', flag: '🇱🇰' }
+        ];
+
+        // Populate country dropdowns
+        const countryOptionsHtml = WORLD_COUNTRIES.map(c => 
+            `<option value="${c.dial}">${c.flag} ${c.name} (+${c.dial})</option>`
+        ).join('') + `<option value="custom">🌐 Custom Country Code (+...)</option>`;
+
+        const selectCountryPairing = document.getElementById('selectCountryPairing');
+        const selectCountryVerify = document.getElementById('selectCountryVerify');
+        const badgeDialPairing = document.getElementById('badgeDialPairing');
+        const badgeDialVerify = document.getElementById('badgeDialVerify');
+        const previewPhonePairing = document.getElementById('previewPhonePairing');
+        const inputPhonePairing = document.getElementById('inputPhonePairing');
+        const inputPhoneVerify = document.getElementById('inputPhoneVerify');
+        const inputDirectCode = document.getElementById('inputDirectCode');
+
+        if (selectCountryPairing) {
+            selectCountryPairing.innerHTML = countryOptionsHtml;
+            selectCountryPairing.value = '91';
+            selectCountryPairing.addEventListener('change', () => {
+                const dial = selectCountryPairing.value;
+                badgeDialPairing.textContent = dial === 'custom' ? '+' : `+${dial}`;
+                updatePairingPreview();
+            });
+        }
+
+        if (selectCountryVerify) {
+            selectCountryVerify.innerHTML = countryOptionsHtml;
+            selectCountryVerify.value = '91';
+            selectCountryVerify.addEventListener('change', () => {
+                const dial = selectCountryVerify.value;
+                badgeDialVerify.textContent = dial === 'custom' ? '+' : `+${dial}`;
+            });
+        }
+
+        function getFullNumber(inputElem, selectElem) {
+            const raw = (inputElem?.value || '').trim();
+            if (raw.startsWith('+')) return raw.replace(/[^0-9]/g, '');
+            const dial = selectElem ? selectElem.value : '91';
+            let digits = raw.replace(/[^0-9]/g, '');
+            if (digits.startsWith('0')) digits = digits.replace(/^0+/, '');
+            if (dial === 'custom') return digits;
+            return `${dial}${digits}`;
+        }
+
+        function updatePairingPreview() {
+            const num = getFullNumber(inputPhonePairing, selectCountryPairing);
+            if (previewPhonePairing) {
+                previewPhonePairing.textContent = num ? `+${num}` : '+...';
+            }
+        }
+
+        // Two-way synchronization between Pairing and Verify tabs
+        if (inputPhonePairing && inputPhoneVerify) {
+            inputPhonePairing.addEventListener('input', () => {
+                inputPhoneVerify.value = inputPhonePairing.value;
+                updatePairingPreview();
+            });
+            inputPhoneVerify.addEventListener('input', () => {
+                inputPhonePairing.value = inputPhoneVerify.value;
+                updatePairingPreview();
+            });
+        }
+        if (selectCountryPairing && selectCountryVerify) {
+            selectCountryPairing.addEventListener('change', () => {
+                selectCountryVerify.value = selectCountryPairing.value;
+                badgeDialVerify.textContent = badgeDialPairing.textContent;
+            });
+            selectCountryVerify.addEventListener('change', () => {
+                selectCountryPairing.value = selectCountryVerify.value;
+                badgeDialPairing.textContent = badgeDialVerify.textContent;
+                updatePairingPreview();
+            });
+        }
+
+        document.getElementById('btnSwitchToPairing')?.addEventListener('click', () => {
+            selectLoginMethod('pairing');
+        });
+
+        // Auto format verification code: ABCD-EFGH
+        if (inputDirectCode) {
+            inputDirectCode.addEventListener('input', (e) => {
+                let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                if (v.length > 8) v = v.substring(0, 8);
+                if (v.length > 4) {
+                    e.target.value = v.substring(0, 4) + '-' + v.substring(4);
+                } else {
+                    e.target.value = v;
+                }
+            });
+        }
+
+        // =====================================================================
+        // 2. MAIN NAVIGATION VIEW SWITCHING
+        // =====================================================================
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const contentViews = document.querySelectorAll('.content-view');
+
+        function switchView(targetViewId) {
+            navBtns.forEach(b => {
+                if (b.getAttribute('data-target') === targetViewId) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+
+            contentViews.forEach(v => {
+                if (v.id === targetViewId) {
+                    v.classList.add('active');
+                } else {
+                    v.classList.remove('active');
+                }
+            });
+
+            if (targetViewId === 'view-inbox') {
+                loadInboxChats();
+            }
+            if (targetViewId === 'view-send') {
+                checkActiveCampaign();
+            }
+            if (targetViewId === 'view-settings') {
+                loadCloudSettings();
+            }
+            if (targetViewId === 'view-connect') {
+                syncProviderModeUI();
+                if (activeProviderMode === 'web_qr' && activeLoginMethod === 'qr' && (!currentStatus || currentStatus.status !== 'CONNECTED')) {
+                    ensureQrLoaded();
+                } else if (activeProviderMode === 'cloud_api') {
+                    loadCloudSettings();
+                }
+            }
+        }
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-target');
+                switchView(target);
+            });
+        });
+
+        document.getElementById('headerStatusBadge')?.addEventListener('click', () => {
+            switchView('view-connect');
+        });
+
+        document.getElementById('btnGoToCompose')?.addEventListener('click', () => {
+            switchView('view-send');
+        });
+
+        // =====================================================================
+        // 2.5 PROVIDER MODE SWITCHING ([ WhatsApp Web / QR ]  [ WhatsApp Cloud API ])
+        // =====================================================================
+        let activeProviderMode = 'web_qr';
+        const btnToggleModeWebQr = document.getElementById('btnToggleModeWebQr');
+        const btnToggleModeCloudApi = document.getElementById('btnToggleModeCloudApi');
+        const panelWebQrMode = document.getElementById('panelWebQrMode');
+        const panelCloudApiMode = document.getElementById('panelCloudApiMode');
+
+        function switchConnectionMode(mode, saveToServer = true) {
+            activeProviderMode = mode;
+            syncProviderModeUI();
+
+            if (saveToServer) {
+                fetch('/api/whatsapp/provider-mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode })
+                }).catch(e => console.warn('Failed to save provider mode:', e));
+            }
+
+            if (mode === 'cloud_api') {
+                loadCloudSettings();
+                testCloudConnection(true);
+            } else if (mode === 'web_qr' && (!currentStatus || currentStatus.status !== 'CONNECTED')) {
+                ensureQrLoaded();
+            }
+        }
+
+        function syncProviderModeUI() {
+            const isCloud = activeProviderMode === 'cloud_api';
+            btnToggleModeWebQr?.classList.toggle('active', !isCloud);
+            btnToggleModeCloudApi?.classList.toggle('active', isCloud);
+
+            if (panelWebQrMode) panelWebQrMode.style.display = isCloud ? 'none' : 'block';
+            if (panelCloudApiMode) panelCloudApiMode.style.display = isCloud ? 'block' : 'none';
+
+            // Sync campaign compose selection
+            const radioCloud = document.getElementById('radioProviderCloudApi');
+            const radioWeb = document.getElementById('radioProviderWebQr');
+            if (isCloud && radioCloud) radioCloud.checked = true;
+            if (!isCloud && radioWeb) radioWeb.checked = true;
+
+            document.getElementById('lblProviderWebQr')?.classList.toggle('active', !isCloud);
+            document.getElementById('lblProviderCloudApi')?.classList.toggle('active', isCloud);
+
+            const badgeNotice = document.getElementById('badgeActiveProviderNotice');
+            if (badgeNotice) {
+                badgeNotice.textContent = isCloud ? 'Active: Cloud API' : 'Active: Web / QR';
+                badgeNotice.style.background = isCloud ? '#dbeafe' : 'var(--wa-light-green)';
+                badgeNotice.style.color = isCloud ? '#1d4ed8' : 'var(--wa-dark-teal)';
+            }
+
+            const boxTpl = document.getElementById('boxCloudTemplateSelect');
+            if (boxTpl) boxTpl.style.display = isCloud ? 'block' : 'none';
+        }
+
+        btnToggleModeWebQr?.addEventListener('click', () => switchConnectionMode('web_qr'));
+        btnToggleModeCloudApi?.addEventListener('click', () => switchConnectionMode('cloud_api'));
+
+        // =====================================================================
+        // 3. 3 LOGIN METHOD TABS (CLICKABLE, SMOOTH & CLEAR)
+        // =====================================================================
+        let activeLoginMethod = 'qr';
+        const btnMethodQr = document.getElementById('btnMethodQr');
+        const btnMethodPairing = document.getElementById('btnMethodPairing');
+        const btnMethodVerify = document.getElementById('btnMethodVerify');
+
+        const secMethodQr = document.getElementById('secMethodQr');
+        const secMethodPairing = document.getElementById('secMethodPairing');
+        const secMethodVerify = document.getElementById('secMethodVerify');
+
+        function selectLoginMethod(method) {
+            activeLoginMethod = method;
+            [btnMethodQr, btnMethodPairing, btnMethodVerify].forEach(b => b?.classList.remove('active'));
+            [secMethodQr, secMethodPairing, secMethodVerify].forEach(s => s?.classList.remove('active'));
+
+            if (method === 'qr') {
+                btnMethodQr?.classList.add('active');
+                secMethodQr?.classList.add('active');
+                if (!currentStatus || currentStatus.status !== 'CONNECTED') {
+                    ensureQrLoaded();
+                }
+            } else if (method === 'pairing') {
+                btnMethodPairing?.classList.add('active');
+                secMethodPairing?.classList.add('active');
+                inputPhonePairing?.focus();
+            } else if (method === 'verify') {
+                btnMethodVerify?.classList.add('active');
+                secMethodVerify?.classList.add('active');
+                inputDirectCode?.focus();
+            }
+        }
+
+        btnMethodQr?.addEventListener('click', () => selectLoginMethod('qr'));
+        btnMethodPairing?.addEventListener('click', () => selectLoginMethod('pairing'));
+        btnMethodVerify?.addEventListener('click', () => selectLoginMethod('verify'));
+
+        // =====================================================================
+        // 4. WHATSAPP CONNECTION & STATUS POLLING
+        // =====================================================================
+        let currentStatus = null;
+        let statusPollTimer = null;
+        let isFetchingQr = false;
+
+        async function fetchWhatsAppStatus() {
+            try {
+                const res = await fetch('/api/whatsapp/status');
+                const data = await res.json();
+                currentStatus = data;
+                renderStatusUI(data);
+
+                // If disconnected and QR tab is open, automatically trigger QR connect
+                if (data && data.status === 'DISCONNECTED' && activeLoginMethod === 'qr' && !isFetchingQr) {
+                    ensureQrLoaded();
+                }
+
+                return data;
+            } catch (err) {
+                console.warn('Status poll error:', err.message);
+            }
+        }
+
+        function renderStatusUI(data) {
+            const headerDot = document.getElementById('headerStatusDot');
+            const headerText = document.getElementById('headerStatusText');
+            const boxConnectedState = document.getElementById('boxConnectedState');
+            const boxLoginForms = document.getElementById('boxLoginForms');
+            const displayConnectedNumber = document.getElementById('displayConnectedNumber');
+            const displayConnectedName = document.getElementById('displayConnectedName');
+
+            const qrImageElement = document.getElementById('qrImageElement');
+            const qrLoadingState = document.getElementById('qrLoadingState');
+
+            const boxPairingResult = document.getElementById('boxPairingResult');
+            const displayPairingCode = document.getElementById('displayPairingCode');
+
+            if (data && data.status === 'CONNECTED' && data.phone) {
+                // Connected state
+                if (headerDot) headerDot.className = 'status-dot online';
+                if (headerText) headerText.textContent = `Live: ${data.phone}`;
+
+                if (boxConnectedState) boxConnectedState.style.display = 'block';
+                if (boxLoginForms) boxLoginForms.style.display = 'none';
+                if (displayConnectedNumber) displayConnectedNumber.textContent = data.phone;
+                if (displayConnectedName) displayConnectedName.textContent = data.name ? `${data.name} (Active Device)` : 'Ready to send messages';
+
+            } else {
+                // Not connected state
+                if (boxConnectedState) boxConnectedState.style.display = 'none';
+                if (boxLoginForms) boxLoginForms.style.display = 'block';
+
+                if (data && data.status === 'PAIRING_CODE' && data.pairingCode) {
+                    if (headerDot) headerDot.className = 'status-dot waiting';
+                    if (headerText) headerText.textContent = 'Enter pairing code on phone';
+                    if (boxPairingResult) boxPairingResult.style.display = 'block';
+                    if (displayPairingCode) displayPairingCode.textContent = data.pairingCode;
+                } else if (data && data.status === 'SCAN_QR' && data.qr) {
+                    if (headerDot) headerDot.className = 'status-dot waiting';
+                    if (headerText) headerText.textContent = 'Scan QR code to link';
+                    if (qrLoadingState) qrLoadingState.style.display = 'none';
+                    if (qrImageElement) {
+                        qrImageElement.src = data.qr;
+                        qrImageElement.style.display = 'block';
+                    }
+                } else {
+                    if (headerDot) headerDot.className = 'status-dot';
+                    if (headerText) headerText.textContent = 'Not Connected — Link Now';
+                }
+            }
+        }
+
+        // =====================================================================
+        // 5. METHOD 1: QR CODE ACTIONS
+        // =====================================================================
+        async function ensureQrLoaded(force = false) {
+            if (isFetchingQr && !force) return;
+            isFetchingQr = true;
+
+            const qrLoadingState = document.getElementById('qrLoadingState');
+            const qrImageElement = document.getElementById('qrImageElement');
+            const btnRefreshQr = document.getElementById('btnRefreshQr');
+            const textQrLoading = document.getElementById('textQrLoading');
+
+            if (qrLoadingState) qrLoadingState.style.display = 'flex';
+            if (qrImageElement) qrImageElement.style.display = 'none';
+            if (textQrLoading) textQrLoading.textContent = force ? 'Generating fresh QR code...' : 'Loading WhatsApp QR code...';
+            if (btnRefreshQr) {
+                btnRefreshQr.disabled = true;
+                btnRefreshQr.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Generating...';
+            }
+
+            try {
+                const res = await fetch('/api/whatsapp/connect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ force })
+                });
+                const data = await res.json();
+                renderStatusUI(data);
+            } catch (err) {
+                console.error('Failed to load QR:', err);
+                if (textQrLoading) textQrLoading.textContent = 'Could not generate QR code. Click refresh to retry.';
+            } finally {
+                isFetchingQr = false;
+                if (btnRefreshQr) {
+                    btnRefreshQr.disabled = false;
+                    btnRefreshQr.innerHTML = '<span>🔄 Generate New QR Code</span>';
+                }
+            }
+        }
+
+        document.getElementById('btnRefreshQr')?.addEventListener('click', () => {
+            ensureQrLoaded(true);
+        });
+
+        // =====================================================================
+        // 6. METHOD 2: PAIRING CODE ACTIONS
+        // =====================================================================
+        const btnRequestPairingCode = document.getElementById('btnRequestPairingCode');
+        const btnCopyPairingCode = document.getElementById('btnCopyPairingCode');
+        const boxPairingResult = document.getElementById('boxPairingResult');
+        const displayPairingCode = document.getElementById('displayPairingCode');
+        const textPairingStatus = document.getElementById('textPairingStatus');
+
+        btnRequestPairingCode?.addEventListener('click', async () => {
+            const phone = getFullNumber(inputPhonePairing, selectCountryPairing);
+            if (!phone || phone.length < 8 || phone.length > 15) {
+                alert('Please enter a valid phone number (8 to 15 digits).');
+                inputPhonePairing?.focus();
+                return;
+            }
+
+            btnRequestPairingCode.disabled = true;
+            btnRequestPairingCode.innerHTML = '<span class="spinner" style="width:16px; height:16px;"></span> Generating 8-Digit Code...';
+            if (boxPairingResult) boxPairingResult.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/whatsapp/pair-phone', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to generate pairing code');
+                }
+
+                if (data.status === 'CONNECTED') {
+                    fetchWhatsAppStatus();
+                    return;
+                }
+
+                if (boxPairingResult) boxPairingResult.style.display = 'block';
+                if (displayPairingCode) displayPairingCode.textContent = data.pairingCode || '---- - ----';
+                if (textPairingStatus) textPairingStatus.textContent = `Code generated! Type it into WhatsApp on your phone (+${phone})`;
+
+                startFastStatusPoll();
+            } catch (err) {
+                alert('Pairing Code Notice: ' + err.message);
+            } finally {
+                btnRequestPairingCode.disabled = false;
+                btnRequestPairingCode.innerHTML = '<span>🔑 Generate 8-Digit Pairing Code</span>';
+            }
+        });
+
+        btnCopyPairingCode?.addEventListener('click', async () => {
+            const code = displayPairingCode?.textContent?.replace(/[^A-Za-z0-9]/g, '');
+            if (!code) return;
+            try {
+                await navigator.clipboard.writeText(code);
+                btnCopyPairingCode.textContent = '✓ Copied to clipboard!';
+                setTimeout(() => {
+                    btnCopyPairingCode.textContent = '📋 Copy Code';
+                }, 2500);
+            } catch (e) {
+                prompt('Copy this code:', code);
+            }
+        });
+
+        // =====================================================================
+        // 7. METHOD 3: DIRECT VERIFICATION CODE ACTIONS
+        // =====================================================================
+        const btnSubmitVerificationCode = document.getElementById('btnSubmitVerificationCode');
+        const boxVerifyFeedback = document.getElementById('boxVerifyFeedback');
+        const textVerifyFeedback = document.getElementById('textVerifyFeedback');
+
+        btnSubmitVerificationCode?.addEventListener('click', async () => {
+            const phone = getFullNumber(inputPhoneVerify, selectCountryVerify);
+            if (!phone || phone.length < 8 || phone.length > 15) {
+                alert('Please enter a valid phone number (8 to 15 digits).');
+                inputPhoneVerify?.focus();
+                return;
+            }
+
+            const rawCode = (inputDirectCode?.value || '').replace(/[^A-Za-z0-9]/g, '');
+            if (!rawCode || rawCode.length !== 8) {
+                alert('Please enter your complete 8-character verification code (e.g. ABCD-EFGH).');
+                inputDirectCode?.focus();
+                return;
+            }
+
+            btnSubmitVerificationCode.disabled = true;
+            btnSubmitVerificationCode.innerHTML = '<span class="spinner" style="width:16px; height:16px;"></span> Linking Device...';
+
+            if (boxVerifyFeedback) {
+                boxVerifyFeedback.style.display = 'flex';
+                if (textVerifyFeedback) {
+                    textVerifyFeedback.textContent = `Submitting code ${rawCode.toUpperCase()} for +${phone}...`;
+                }
+            }
+
+            try {
+                const res = await fetch('/api/whatsapp/verify-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, code: rawCode })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Verification failed');
+                }
+
+                if (textVerifyFeedback) {
+                    textVerifyFeedback.textContent = `Code registered! Verifying handshake with WhatsApp...`;
+                }
+
+                startFastStatusPoll();
+            } catch (err) {
+                alert('Verification Notice: ' + err.message);
+                if (boxVerifyFeedback) boxVerifyFeedback.style.display = 'none';
+            } finally {
+                btnSubmitVerificationCode.disabled = false;
+                btnSubmitVerificationCode.innerHTML = '<span>✅ Verify & Link WhatsApp</span>';
+            }
+        });
+
+        // Disconnect Button
+        document.getElementById('btnDisconnectSession')?.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to disconnect this WhatsApp account?')) return;
+            const btn = document.getElementById('btnDisconnectSession');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Disconnecting...';
+
+            try {
+                await fetch('/api/whatsapp/disconnect', { method: 'POST' });
+                await fetchWhatsAppStatus();
+                selectLoginMethod('qr');
+                ensureQrLoaded(true);
+            } catch (err) {
+                alert('Disconnect error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔌 Disconnect / Switch Account</span>';
+            }
+        });
+
+        function startFastStatusPoll() {
+            let attempts = 0;
+            const pollInterval = setInterval(async () => {
+                attempts++;
+                const st = await fetchWhatsAppStatus();
+                if (st && st.status === 'CONNECTED') {
+                    clearInterval(pollInterval);
+                    if (boxVerifyFeedback) boxVerifyFeedback.style.display = 'none';
+                } else if (attempts > 35) {
+                    clearInterval(pollInterval);
+                }
+            }, 1500);
+        }
+
+        // =====================================================================
+        // 8. VIEW 2: CAMPAIGN COMPOSER & DISPATCHER WITH CUSTOM SECONDS DELAY
+        // =====================================================================
+        const inputRecipients = document.getElementById('inputRecipients');
+        const badgeRecipientCount = document.getElementById('badgeRecipientCount');
+        const inputMessageText = document.getElementById('inputMessageText');
+        const badgeCharCount = document.getElementById('badgeCharCount');
+        const inputFileAttachment = document.getElementById('inputFileAttachment');
+        const imagePreviewCard = document.getElementById('imagePreviewCard');
+        const imagePreviewThumb = document.getElementById('imagePreviewThumb');
+        const imagePreviewName = document.getElementById('imagePreviewName');
+        const btnRemoveAttachment = document.getElementById('btnRemoveAttachment');
+        const btnStartCampaign = document.getElementById('btnStartCampaign');
+        const sendErrorNotice = document.getElementById('sendErrorNotice');
+
+        const inputDelaySeconds = document.getElementById('inputDelaySeconds');
+        const previewDelayText = document.getElementById('previewDelayText');
+        const delayChips = document.querySelectorAll('.delay-chip');
+
+        // Delay presets chips handling
+        delayChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                delayChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                const sec = chip.getAttribute('data-sec');
+                if (inputDelaySeconds) {
+                    inputDelaySeconds.value = sec;
+                    updateDelayPreview(sec);
+                }
+            });
+        });
+
+        if (inputDelaySeconds) {
+            inputDelaySeconds.addEventListener('input', (e) => {
+                let v = parseInt(e.target.value, 10);
+                if (isNaN(v) || v < 1) v = 1;
+                if (v > 120) v = 120;
+                
+                // Match chip if exists
+                delayChips.forEach(c => {
+                    if (c.getAttribute('data-sec') === String(v)) {
+                        c.classList.add('active');
+                    } else {
+                        c.classList.remove('active');
+                    }
+                });
+
+                updateDelayPreview(v);
+            });
+        }
+
+        function updateDelayPreview(seconds) {
+            if (previewDelayText) {
+                previewDelayText.textContent = `${seconds} second${seconds == 1 ? '' : 's'}`;
+            }
+        }
+
+        let attachmentBase64 = null;
+
+        function parseRecipientNumbers() {
+            const raw = inputRecipients?.value || '';
+            const lines = raw.split(/[\n,;]+/).map(s => s.trim().replace(/[^0-9]/g, '')).filter(s => s.length >= 8);
+            const unique = [...new Set(lines)];
+            return unique;
+        }
+
+        inputRecipients?.addEventListener('input', () => {
+            const nums = parseRecipientNumbers();
+            if (badgeRecipientCount) {
+                badgeRecipientCount.textContent = `${nums.length} recipient${nums.length === 1 ? '' : 's'}`;
+            }
+        });
+
+        inputMessageText?.addEventListener('input', () => {
+            const len = (inputMessageText.value || '').length;
+            if (badgeCharCount) {
+                badgeCharCount.textContent = `${len} character${len === 1 ? '' : 's'}`;
+            }
+        });
+
+        inputFileAttachment?.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                attachmentBase64 = ev.target.result;
+                if (imagePreviewThumb) imagePreviewThumb.src = attachmentBase64;
+                if (imagePreviewName) imagePreviewName.textContent = file.name;
+                if (imagePreviewCard) imagePreviewCard.style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        btnRemoveAttachment?.addEventListener('click', () => {
+            attachmentBase64 = null;
+            if (inputFileAttachment) inputFileAttachment.value = '';
+            if (imagePreviewCard) imagePreviewCard.style.display = 'none';
+        });
+
+        btnStartCampaign?.addEventListener('click', async () => {
+            const recipients = parseRecipientNumbers();
+            const message = (inputMessageText?.value || '').trim();
+            const delaySec = Math.max(1, Math.min(120, parseInt(inputDelaySeconds?.value, 10) || 3));
+            const chosenProvider = document.querySelector('input[name="campaignProvider"]:checked')?.value || activeProviderMode || 'web_qr';
+            const templateName = (chosenProvider === 'cloud_api' && selectMetaTemplate?.value) ? selectMetaTemplate.value : null;
+
+            if (!recipients.length) {
+                showSendError('Please enter at least one valid recipient phone number with country code.');
+                inputRecipients?.focus();
+                return;
+            }
+
+            if (!message && !attachmentBase64 && !templateName) {
+                showSendError('Please enter message text, attach an image, or select an approved template.');
+                inputMessageText?.focus();
+                return;
+            }
+
+            hideSendError();
+            btnStartCampaign.disabled = true;
+            btnStartCampaign.innerHTML = '<span class="spinner" style="width:16px; height:16px;"></span> Starting Campaign...';
+
+            try {
+                const res = await fetch('/api/campaigns', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: `Dispatch ${new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}`,
+                        message,
+                        recipients,
+                        attachment: attachmentBase64 || '',
+                        delaySeconds: delaySec,
+                        provider: chosenProvider,
+                        templateName: templateName,
+                        autoStart: true
+                    })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to dispatch campaign');
+                }
+
+                trackCampaignProgress(data.campaign.id, delaySec);
+            } catch (err) {
+                showSendError(err.message);
+                btnStartCampaign.disabled = false;
+                btnStartCampaign.innerHTML = '<span>🚀 Send Message Campaign</span>';
+            }
+        });
+
+        function showSendError(msg) {
+            if (sendErrorNotice) {
+                sendErrorNotice.textContent = msg;
+                sendErrorNotice.style.display = 'inline-block';
+            }
+        }
+
+        function hideSendError() {
+            if (sendErrorNotice) sendErrorNotice.style.display = 'none';
+        }
+
+        let currentTrackingCampaignId = null;
+        let campaignProgressTimer = null;
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function trackCampaignProgress(campaignId, delaySec = 3) {
+            currentTrackingCampaignId = campaignId;
+            if (campaignProgressTimer) clearInterval(campaignProgressTimer);
+
+            const statTotal = document.getElementById('statTotal');
+            const statSent = document.getElementById('statSent');
+            const statFailed = document.getElementById('statFailed');
+            const statRemaining = document.getElementById('statRemaining');
+            const progressBarFill = document.getElementById('progressBarFill');
+            const textProgressStatus = document.getElementById('textProgressStatus');
+            const boxLiveLogs = document.getElementById('boxLiveLogs');
+            const badgeCampaignState = document.getElementById('badgeCampaignState');
+            const campaignNameDisplay = document.getElementById('campaignNameDisplay');
+            const btnStopCampaign = document.getElementById('btnStopCampaign');
+            const btnResumeCampaign = document.getElementById('btnResumeCampaign');
+            const btnCancelCampaign = document.getElementById('btnCancelCampaign');
+
+            async function updateProgress() {
+                try {
+                    const res = await fetch(`/api/campaigns/${campaignId}/logs`);
+                    const data = await res.json();
+
+                    if (!data || !data.success) return;
+
+                    const m = data.metrics || data.counts || {};
+                    const total = m.total || 0;
+                    const sent = m.sent || 0;
+                    const failed = m.failed || 0;
+                    const pending = m.pending || 0;
+                    const processing = m.processing || 0;
+                    const remaining = pending + processing;
+                    const campStatus = data.campaign?.status || (remaining === 0 && total > 0 ? 'COMPLETED' : 'RUNNING');
+
+                    // 1. Update Numbers
+                    if (statTotal) statTotal.textContent = total;
+                    if (statSent) statSent.textContent = sent;
+                    if (statDelivered) statDelivered.textContent = m.delivered || 0;
+                    if (statFailed) statFailed.textContent = failed;
+                    if (statRemaining) statRemaining.textContent = remaining;
+
+                    // 2. Progress Bar
+                    const percent = total > 0 ? Math.min(100, Math.round(((sent + failed) / total) * 100)) : 0;
+                    if (progressBarFill) progressBarFill.style.width = `${percent}%`;
+
+                    // 3. Campaign Title
+                    if (data.campaign?.name && campaignNameDisplay) {
+                        campaignNameDisplay.textContent = data.campaign.name;
+                    }
+
+                    // 4. Status Badge Color and Text
+                    if (badgeCampaignState) {
+                        badgeCampaignState.style.display = 'inline-block';
+                        badgeCampaignState.textContent = campStatus;
+                        if (campStatus === 'RUNNING') {
+                            badgeCampaignState.style.background = '#d1fae5';
+                            badgeCampaignState.style.color = '#065f46';
+                            badgeCampaignState.style.border = '1px solid #a7f3d0';
+                        } else if (campStatus === 'PAUSED') {
+                            badgeCampaignState.style.background = '#fef3c7';
+                            badgeCampaignState.style.color = '#92400e';
+                            badgeCampaignState.style.border = '1px solid #fde68a';
+                        } else if (campStatus === 'CANCELLED') {
+                            badgeCampaignState.style.background = '#fee2e2';
+                            badgeCampaignState.style.color = '#991b1b';
+                            badgeCampaignState.style.border = '1px solid #fecaca';
+                        } else if (campStatus === 'COMPLETED') {
+                            badgeCampaignState.style.background = '#ecfdf5';
+                            badgeCampaignState.style.color = '#047857';
+                            badgeCampaignState.style.border = '1px solid #6ee7b7';
+                        }
+                    }
+
+                    // 5. Button and Label States
+                    if (campStatus === 'RUNNING') {
+                        if (btnStopCampaign) btnStopCampaign.style.display = 'inline-flex';
+                        if (btnResumeCampaign) btnResumeCampaign.style.display = 'none';
+                        if (btnCancelCampaign) btnCancelCampaign.style.display = 'inline-flex';
+                        if (btnStartCampaign) {
+                            btnStartCampaign.disabled = true;
+                            btnStartCampaign.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Dispatching messages...';
+                        }
+                        if (textProgressStatus) {
+                            textProgressStatus.textContent = `Dispatching: ${sent} sent, ${m.delivered || 0} delivered, ${failed} failed of ${total} (${delaySec}s delay between each)`;
+                        }
+                    } else if (campStatus === 'PAUSED') {
+                        if (btnStopCampaign) btnStopCampaign.style.display = 'none';
+                        if (btnResumeCampaign) btnResumeCampaign.style.display = 'inline-flex';
+                        if (btnCancelCampaign) btnCancelCampaign.style.display = 'inline-flex';
+                        if (btnStartCampaign) {
+                            btnStartCampaign.disabled = true;
+                            btnStartCampaign.innerHTML = '<span>⏸️ Campaign Paused</span>';
+                        }
+                        if (textProgressStatus) {
+                            textProgressStatus.textContent = `Campaign paused at ${sent} sent. Click Resume to continue dispatching.`;
+                        }
+                    } else if (campStatus === 'COMPLETED') {
+                        if (campaignProgressTimer) clearInterval(campaignProgressTimer);
+                        if (btnStopCampaign) btnStopCampaign.style.display = 'none';
+                        if (btnResumeCampaign) btnResumeCampaign.style.display = 'none';
+                        if (btnCancelCampaign) btnCancelCampaign.style.display = 'none';
+                        if (btnStartCampaign) {
+                            btnStartCampaign.disabled = false;
+                            btnStartCampaign.innerHTML = '<span>🚀 Send Message Campaign</span>';
+                        }
+                        if (textProgressStatus) {
+                            textProgressStatus.textContent = `Completed! ${sent} message(s) sent, ${m.delivered || 0} delivered${failed > 0 ? `, ${failed} failed` : ''}.`;
+                        }
+                    } else if (campStatus === 'CANCELLED') {
+                        if (campaignProgressTimer) clearInterval(campaignProgressTimer);
+                        if (btnStopCampaign) btnStopCampaign.style.display = 'none';
+                        if (btnResumeCampaign) btnResumeCampaign.style.display = 'none';
+                        if (btnCancelCampaign) btnCancelCampaign.style.display = 'none';
+                        if (btnStartCampaign) {
+                            btnStartCampaign.disabled = false;
+                            btnStartCampaign.innerHTML = '<span>🚀 Send Message Campaign</span>';
+                        }
+                        if (textProgressStatus) {
+                            textProgressStatus.textContent = `Campaign stopped & cancelled. Sent ${sent} message(s).`;
+                        }
+                    }
+
+                    // 6. Real-time Logs Feed (Enhanced with Webhook Delivery Receipts & Meta Message IDs)
+                    if (boxLiveLogs) {
+                        if (data.logs && data.logs.length) {
+                            boxLiveLogs.innerHTML = data.logs.map(l => {
+                                let badgeText = '✓ SENT';
+                                let color = '#059669';
+                                let bg = '#ecfdf5';
+                                let border = '#a7f3d0';
+
+                                if (l.status === 'WEBHOOK_DELIVERED') {
+                                    badgeText = '📨 DELIVERED';
+                                    color = '#0284c7';
+                                    bg = '#f0f9ff';
+                                    border = '#bae6fd';
+                                } else if (l.status === 'WEBHOOK_READ') {
+                                    badgeText = '👁️ READ';
+                                    color = '#7c3aed';
+                                    bg = '#f5f3ff';
+                                    border = '#ddd6fe';
+                                } else if (l.status === 'WEBHOOK_FAILED' || l.status === 'FAILED') {
+                                    badgeText = '✗ FAILED';
+                                    color = '#dc2626';
+                                    bg = '#fef2f2';
+                                    border = '#fecaca';
+                                }
+
+                                const providerBadge = l.provider === 'cloud_api' 
+                                    ? '<span style="font-size:10px; font-weight:700; color:#1d4ed8; background:#dbeafe; padding:1px 6px; border-radius:4px; margin-left:6px;">☁️ Cloud API</span>' 
+                                    : '<span style="font-size:10px; font-weight:700; color:#065f46; background:#d1fae5; padding:1px 6px; border-radius:4px; margin-left:6px;">📱 Web/QR</span>';
+
+                                const msgIdBadge = l.message_id 
+                                    ? `<span style="font-size:10px; color:#64748b; font-family:'JetBrains Mono',monospace; margin-left:6px; background:#f1f5f9; padding:1px 5px; border-radius:4px;" title="${escapeHtml(l.message_id)}">id: ${escapeHtml(l.message_id.length > 18 ? l.message_id.substring(0, 16) + '...' : l.message_id)}</span>` 
+                                    : '';
+
+                                const time = l.timestamp ? new Date(l.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' }) : '';
+                                const errDetail = l.error ? `<div style="font-size:11px; color:#b91c1c; margin-top:3px; word-break:break-word;">${escapeHtml(l.error)}</div>` : '';
+
+                                return `
+                                    <div style="margin-bottom:6px; padding:7px 10px; background:${bg}; border:1px solid ${border}; border-radius:8px;">
+                                        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                                            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
+                                                <span style="font-weight:700; color:${color}; font-size:10.5px; padding:2px 7px; border-radius:4px; background:#fff; border:1px solid ${border};">${badgeText}</span>
+                                                <strong style="color:var(--text-heading); margin-left:4px; font-size:12.5px;">+${l.phone}</strong>
+                                                ${providerBadge}
+                                                ${msgIdBadge}
+                                            </div>
+                                            <span style="font-size:11px; color:var(--text-muted); font-weight:500;">${time}</span>
+                                        </div>
+                                        ${errDetail}
+                                    </div>
+                                `;
+                            }).join('');
+                            boxLiveLogs.scrollTop = boxLiveLogs.scrollHeight;
+                        } else if (campStatus === 'RUNNING' && total > 0 && sent === 0 && failed === 0) {
+                            boxLiveLogs.innerHTML = `<div style="color:var(--wa-dark-teal); font-weight:600; padding:12px; text-align:center;"><span class="spinner" style="width:14px; height:14px;"></span> Starting delivery sequence...</div>`;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Campaign progress check error:', e);
+                }
+            }
+
+            updateProgress();
+            campaignProgressTimer = setInterval(updateProgress, 1200);
+        }
+
+        // Campaign Action Handlers (Stop / Pause, Resume, Cancel)
+        document.getElementById('btnStopCampaign')?.addEventListener('click', async () => {
+            if (!currentTrackingCampaignId) return;
+            const btn = document.getElementById('btnStopCampaign');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Stopping...';
+            try {
+                const res = await fetch(`/api/campaigns/${currentTrackingCampaignId}/pause`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to pause campaign');
+                trackCampaignProgress(currentTrackingCampaignId);
+            } catch (err) {
+                alert('Stop Campaign Notice: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>⏸️ Stop / Pause</span>';
+            }
+        });
+
+        document.getElementById('btnResumeCampaign')?.addEventListener('click', async () => {
+            if (!currentTrackingCampaignId) return;
+            const btn = document.getElementById('btnResumeCampaign');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Resuming...';
+            try {
+                const res = await fetch(`/api/campaigns/${currentTrackingCampaignId}/resume`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to resume campaign');
+                trackCampaignProgress(currentTrackingCampaignId);
+            } catch (err) {
+                alert('Resume Campaign Notice: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>▶️ Resume</span>';
+            }
+        });
+
+        document.getElementById('btnCancelCampaign')?.addEventListener('click', async () => {
+            if (!currentTrackingCampaignId) return;
+            if (!confirm('Are you sure you want to stop and cancel this campaign? Any pending unsent messages will be cancelled.')) return;
+            const btn = document.getElementById('btnCancelCampaign');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Cancelling...';
+            try {
+                const res = await fetch(`/api/campaigns/${currentTrackingCampaignId}/cancel`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to cancel campaign');
+                trackCampaignProgress(currentTrackingCampaignId);
+            } catch (err) {
+                alert('Cancel Campaign Notice: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>⏹️ Cancel</span>';
+            }
+        });
+
+        // Automatically detect active or running campaign on load
+        async function checkActiveCampaign() {
+            try {
+                const res = await fetch('/api/campaigns');
+                const data = await res.json();
+                if (data && data.campaigns && data.campaigns.length) {
+                    const active = data.campaigns.find(c => c.status === 'RUNNING' || c.status === 'PAUSED');
+                    if (active) {
+                        trackCampaignProgress(active.id);
+                    }
+                }
+            } catch (e) {}
+        }
+        checkActiveCampaign();
+
+        // =====================================================================
+        // 9. VIEW 3: INBOX & CHAT REPLIES
+        // =====================================================================
+        let activeChatPhone = null;
+
+        async function loadInboxChats() {
+            const boxChatList = document.getElementById('boxChatList');
+            try {
+                const res = await fetch('/api/chats');
+                const data = await res.json();
+                const chats = data.chats || [];
+
+                if (!chats.length) {
+                    boxChatList.innerHTML = `<div style="padding:28px; text-align:center; color:var(--text-muted); font-size:13.5px;">No conversations found yet.</div>`;
+                    return;
+                }
+
+                boxChatList.innerHTML = chats.map(c => `
+                    <div class="chat-item" data-phone="${c.phone}" style="padding:14px 18px; border-bottom:1px solid var(--border-color); cursor:pointer; display:flex; align-items:center; gap:12px; transition:background 0.15s;" onmouseover="this.style.background='var(--bg-subtle)'" onmouseout="this.style.background=''">
+                        <div style="width:40px; height:40px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">👤</div>
+                        <div style="flex:1; overflow:hidden;">
+                            <div style="font-weight:700; font-size:14px; color:var(--text-heading); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">${c.name || '+' + c.phone}</div>
+                            <div style="font-size:12.5px; color:var(--text-muted); text-overflow:ellipsis; overflow:hidden; white-space:nowrap; margin-top:2px;">${c.last_message || 'No messages'}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                boxChatList.querySelectorAll('.chat-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const phone = item.getAttribute('data-phone');
+                        openChatConversation(phone);
+                    });
+                });
+            } catch (err) {
+                boxChatList.innerHTML = `<div style="padding:18px; color:var(--danger); font-size:13.5px;">Failed to load chats.</div>`;
+            }
+        }
+
+        async function openChatConversation(phone) {
+            activeChatPhone = phone;
+            const boxChatTitle = document.getElementById('boxChatTitle');
+            const boxChatMessages = document.getElementById('boxChatMessages');
+
+            boxChatTitle.textContent = `Chat with +${phone}`;
+            boxChatMessages.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:13px; margin-top:40px;">Loading messages...</div>`;
+
+            try {
+                const res = await fetch(`/api/chats/${phone}`);
+                const data = await res.json();
+                const msgs = data.messages || [];
+
+                if (!msgs.length) {
+                    boxChatMessages.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:13.5px; margin-top:60px;">No messages in this chat yet.</div>`;
+                    return;
+                }
+
+                boxChatMessages.innerHTML = msgs.map(m => {
+                    const isMe = m.from_me || m.status === 'SUCCESS';
+                    return `
+                        <div style="align-self:${isMe ? 'flex-end' : 'flex-start'}; max-width:72%; background:${isMe ? 'var(--wa-bubble-me)' : '#ffffff'}; border:1px solid ${isMe ? '#c3e6cb' : '#e2e8f0'}; border-radius:14px; padding:10px 14px; font-size:13.5px; color:var(--text-heading); box-shadow:var(--shadow-sm);">
+                            <div>${m.message_body || m.body || ''}</div>
+                            <div style="font-size:10.5px; color:var(--text-muted); text-align:right; margin-top:4px;">${new Date(m.created_at || Date.now()).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                boxChatMessages.scrollTop = boxChatMessages.scrollHeight;
+            } catch (err) {
+                boxChatMessages.innerHTML = `<div style="color:var(--danger); font-size:13px;">Failed to load conversation.</div>`;
+            }
+        }
+
+        document.getElementById('btnSendChatReply')?.addEventListener('click', async () => {
+            const input = document.getElementById('inputChatReply');
+            const text = (input?.value || '').trim();
+            if (!activeChatPhone || !text) return;
+
+            input.value = '';
+            try {
+                await fetch('/api/chats/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: activeChatPhone, message: text })
+                });
+                openChatConversation(activeChatPhone);
+            } catch (err) {
+                alert('Send reply failed: ' + err.message);
+            }
+        });
+
+        document.getElementById('btnRefreshInbox')?.addEventListener('click', loadInboxChats);
+
+        // =====================================================================
+        // 10. SETTINGS & CLOUD API MANAGEMENT (OFFICIAL META INTEGRATION)
+        // =====================================================================
+        const inputSettingsWabaId = document.getElementById('inputSettingsWabaId');
+        const inputSettingsPhoneId = document.getElementById('inputSettingsPhoneId');
+        const inputSettingsAccessToken = document.getElementById('inputSettingsAccessToken');
+        const btnToggleTokenVisibility = document.getElementById('btnToggleTokenVisibility');
+        const tokenNoticeText = document.getElementById('tokenNoticeText');
+        const selectSettingsApiVersion = document.getElementById('selectSettingsApiVersion');
+        const selectSettingsDefaultProvider = document.getElementById('selectSettingsDefaultProvider');
+        const btnSaveCloudSettings = document.getElementById('btnSaveCloudSettings');
+        const btnTestSettingsConnection = document.getElementById('btnTestSettingsConnection');
+        const saveSettingsFeedback = document.getElementById('saveSettingsFeedback');
+        const boxSettingsTestResult = document.getElementById('boxSettingsTestResult');
+
+        const inputSettingsCallbackUrl = document.getElementById('inputSettingsCallbackUrl');
+        const inputSettingsVerifyToken = document.getElementById('inputSettingsVerifyToken');
+        const quickWebhookUrl = document.getElementById('quickWebhookUrl');
+        const quickVerifyToken = document.getElementById('quickVerifyToken');
+        const btnRegenerateToken = document.getElementById('btnRegenerateToken');
+
+        const bannerMetaStatus = document.getElementById('bannerMetaStatus');
+        const iconMetaStatus = document.getElementById('iconMetaStatus');
+        const titleMetaStatus = document.getElementById('titleMetaStatus');
+        const descMetaStatus = document.getElementById('descMetaStatus');
+        const metaStatusPills = document.getElementById('metaStatusPills');
+
+        const displayCloudVerifiedName = document.getElementById('displayCloudVerifiedName');
+        const displayCloudPhoneNumber = document.getElementById('displayCloudPhoneNumber');
+        const displayCloudQuality = document.getElementById('displayCloudQuality');
+        const displayCloudPhoneId = document.getElementById('displayCloudPhoneId');
+
+        const selectMetaTemplate = document.getElementById('selectMetaTemplate');
+        const containerMetaTemplates = document.getElementById('containerMetaTemplates');
+        const btnRefreshMetaTemplates = document.getElementById('btnRefreshMetaTemplates');
+        const btnRefreshTemplatesOverview = document.getElementById('btnRefreshTemplatesOverview');
+        const btnConnectTestCloud = document.getElementById('btnConnectTestCloud');
+
+        let cachedCloudTemplates = [];
+
+        // Radio dispatch provider change
+        document.getElementById('radioProviderWebQr')?.addEventListener('change', () => switchConnectionMode('web_qr', true));
+        document.getElementById('radioProviderCloudApi')?.addEventListener('change', () => switchConnectionMode('cloud_api', true));
+
+        // Toggle Token Visibility
+        btnToggleTokenVisibility?.addEventListener('click', () => {
+            if (inputSettingsAccessToken.type === 'password') {
+                inputSettingsAccessToken.type = 'text';
+                btnToggleTokenVisibility.textContent = '🙈 Hide';
+            } else {
+                inputSettingsAccessToken.type = 'password';
+                btnToggleTokenVisibility.textContent = '👁️ Show';
+            }
+        });
+
+        // Copy helper with visual feedback
+        async function copyToClipboard(inputElement, btnElement, label = 'Copy') {
+            const val = inputElement?.value || '';
+            if (!val) return;
+            try {
+                await navigator.clipboard.writeText(val);
+                btnElement.textContent = '✓ Copied!';
+                btnElement.style.color = '#059669';
+                setTimeout(() => {
+                    btnElement.textContent = `📋 ${label}`;
+                    btnElement.style.color = '';
+                }, 2200);
+            } catch (err) {
+                prompt('Copy text:', val);
+            }
+        }
+
+        document.getElementById('btnCopySettingsUrl')?.addEventListener('click', function() {
+            copyToClipboard(inputSettingsCallbackUrl, this, 'Copy URL');
+        });
+        document.getElementById('btnCopySettingsToken')?.addEventListener('click', function() {
+            copyToClipboard(inputSettingsVerifyToken, this, 'Copy Token');
+        });
+        document.getElementById('btnCopyQuickUrl')?.addEventListener('click', function() {
+            copyToClipboard(quickWebhookUrl, this, 'Copy URL');
+        });
+        document.getElementById('btnCopyQuickToken')?.addEventListener('click', function() {
+            copyToClipboard(quickVerifyToken, this, 'Copy Token');
+        });
+
+        // Toggle Verify Token Mask Visibility
+        document.getElementById('btnToggleSettingsVerifyToken')?.addEventListener('click', () => {
+            const el = document.getElementById('inputSettingsVerifyToken');
+            if (el) el.type = el.type === 'password' ? 'text' : 'password';
+        });
+        document.getElementById('btnToggleQuickToken')?.addEventListener('click', () => {
+            const el = document.getElementById('quickVerifyToken');
+            if (el) el.type = el.type === 'password' ? 'text' : 'password';
+        });
+
+        // Cloud API Disconnect Handlers
+        async function disconnectCloudApi() {
+            if (!confirm('Are you sure you want to disconnect WhatsApp Cloud API? This will clear stored credentials and reset connection status.')) return;
+            try {
+                const res = await fetch('/api/whatsapp/cloud/disconnect', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    alert('✓ WhatsApp Cloud API disconnected and credentials cleared.');
+                    await loadCloudSettings();
+                    await fetchProvidersStatus();
+                }
+            } catch (err) {
+                alert('Disconnect error: ' + err.message);
+            }
+        }
+        document.getElementById('btnDisconnectCloud')?.addEventListener('click', disconnectCloudApi);
+        document.getElementById('btnConnectDisconnectCloud')?.addEventListener('click', disconnectCloudApi);
+
+        // Regenerate Webhook Verify Token
+        btnRegenerateToken?.addEventListener('click', async () => {
+            if (!confirm('Generate a new secure Webhook Verify Token? Note: You must also update this token in Meta Developer Portal.')) return;
+            btnRegenerateToken.disabled = true;
+            btnRegenerateToken.textContent = '⏳';
+            try {
+                const res = await fetch('/api/whatsapp/cloud/generate-verify-token', { method: 'POST' });
+                const data = await res.json();
+                if (data.success && data.verifyToken) {
+                    if (inputSettingsVerifyToken) inputSettingsVerifyToken.value = data.verifyToken;
+                    if (quickVerifyToken) quickVerifyToken.value = data.verifyToken;
+                    alert('✓ New Verify Token generated! Remember to update it in Meta Developer Portal > WhatsApp > Configuration.');
+                }
+            } catch (err) {
+                alert('Failed to generate token: ' + err.message);
+            } finally {
+                btnRegenerateToken.disabled = false;
+                btnRegenerateToken.textContent = '🔄 New';
+            }
+        });
+
+        // Load Cloud API Settings from Backend
+        async function loadCloudSettings() {
+            try {
+                const res = await fetch('/api/whatsapp/cloud/settings');
+                const data = await res.json();
+                if (!data.success) return;
+
+                if (inputSettingsWabaId) inputSettingsWabaId.value = data.wabaId || '';
+                if (inputSettingsPhoneId) inputSettingsPhoneId.value = data.phoneNumberId || '';
+                if (selectSettingsApiVersion) selectSettingsApiVersion.value = data.apiVersion || 'v22.0';
+                if (selectSettingsDefaultProvider) selectSettingsDefaultProvider.value = data.defaultProvider || 'cloud_api';
+
+                if (inputSettingsCallbackUrl) inputSettingsCallbackUrl.value = data.callbackUrl || '';
+                if (quickWebhookUrl) quickWebhookUrl.value = data.callbackUrl || '';
+
+                if (inputSettingsVerifyToken) inputSettingsVerifyToken.value = data.verifyToken || '';
+                if (quickVerifyToken) quickVerifyToken.value = data.verifyToken || '';
+
+                if (displayCloudPhoneId) displayCloudPhoneId.textContent = data.phoneNumberId || 'Not set';
+
+                if (data.hasAccessToken) {
+                    if (inputSettingsAccessToken) {
+                        inputSettingsAccessToken.value = data.maskedAccessToken || '••••••••••••••••';
+                        inputSettingsAccessToken.setAttribute('data-masked', 'true');
+                    }
+                    if (tokenNoticeText) {
+                        tokenNoticeText.innerHTML = '<span style="color:#059669; font-weight:700;">✓ Active System User Token is securely saved in private SQLite storage.</span> Leave unchanged to keep current token.';
+                    }
+                }
+
+                if (data.isConfigured) {
+                    testCloudConnection(true);
+                } else {
+                    renderCloudStatus({
+                        connected: false,
+                        error: 'Cloud API credentials not configured yet. Enter your WABA ID, Phone ID & Token in Settings.'
+                    });
+                }
+            } catch (err) {
+                console.warn('Load cloud settings error:', err);
+            }
+        }
+
+        // Save Cloud API Settings
+        btnSaveCloudSettings?.addEventListener('click', async () => {
+            const wabaId = (inputSettingsWabaId?.value || '').trim();
+            const phoneNumberId = (inputSettingsPhoneId?.value || '').trim();
+            let accessToken = (inputSettingsAccessToken?.value || '').trim();
+            const apiVersion = selectSettingsApiVersion?.value || 'v22.0';
+            const defaultProvider = selectSettingsDefaultProvider?.value || 'cloud_api';
+
+            // If user did not change the masked token, don't overwrite it
+            if (accessToken.includes('••••')) {
+                accessToken = '';
+            }
+
+            btnSaveCloudSettings.disabled = true;
+            btnSaveCloudSettings.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Saving...';
+
+            try {
+                const res = await fetch('/api/whatsapp/cloud/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        wabaId,
+                        phoneNumberId,
+                        accessToken,
+                        apiVersion,
+                        defaultProvider
+                    })
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to save settings');
+                }
+
+                if (saveSettingsFeedback) {
+                    saveSettingsFeedback.textContent = '✓ Settings saved securely!';
+                    saveSettingsFeedback.style.color = '#059669';
+                    saveSettingsFeedback.style.display = 'inline-block';
+                    setTimeout(() => { saveSettingsFeedback.style.display = 'none'; }, 3500);
+                }
+
+                await loadCloudSettings();
+                testCloudConnection(false);
+            } catch (err) {
+                alert('Save Settings Error: ' + err.message);
+            } finally {
+                btnSaveCloudSettings.disabled = false;
+                btnSaveCloudSettings.innerHTML = '<span>💾 Save Cloud API Settings</span>';
+            }
+        });
+
+        // Test Cloud Connection against Official Meta Graph API
+        async function testCloudConnection(silent = false) {
+            const btnSettings = btnTestSettingsConnection;
+            const btnConnect = btnConnectTestCloud;
+
+            if (!silent) {
+                if (btnSettings) {
+                    btnSettings.disabled = true;
+                    btnSettings.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Testing Meta Handshake...';
+                }
+                if (btnConnect) {
+                    btnConnect.disabled = true;
+                    btnConnect.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Testing...';
+                }
+            }
+
+            try {
+                const res = await fetch('/api/whatsapp/cloud/test', { method: 'POST' });
+                const data = await res.json();
+                renderCloudStatus(data);
+                if (data.success) {
+                    loadApprovedTemplates();
+                }
+            } catch (err) {
+                renderCloudStatus({ connected: false, error: err.message });
+            } finally {
+                if (btnSettings) {
+                    btnSettings.disabled = false;
+                    btnSettings.innerHTML = '<span>⚡ Test Connection with Meta</span>';
+                }
+                if (btnConnect) {
+                    btnConnect.disabled = false;
+                    btnConnect.innerHTML = '<span>⚡ Test Connection</span>';
+                }
+            }
+        }
+
+        btnTestSettingsConnection?.addEventListener('click', () => testCloudConnection(false));
+        btnConnectTestCloud?.addEventListener('click', () => testCloudConnection(false));
+
+        function renderCloudStatus(data) {
+            const isOk = !!data.success && !!data.connected;
+
+            // 1. Update Connect view live banner
+            if (bannerMetaStatus) {
+                bannerMetaStatus.className = `meta-status-banner ${isOk ? 'success' : 'danger'}`;
+            }
+            if (iconMetaStatus) iconMetaStatus.textContent = isOk ? '✅' : '❌';
+            if (titleMetaStatus) {
+                titleMetaStatus.textContent = isOk 
+                    ? `Meta Cloud API Connected (${data.displayPhoneNumber || 'Ready'})`
+                    : 'Meta Cloud API Not Connected';
+            }
+            if (descMetaStatus) {
+                descMetaStatus.textContent = isOk
+                    ? `Verified Business: ${data.verifiedName || 'Meta WhatsApp WABA'} | API ${data.apiVersion || 'v22.0'}`
+                    : (data.error || 'Connection handshake failed with Meta Graph API.');
+            }
+            if (metaStatusPills) {
+                if (isOk) {
+                    metaStatusPills.innerHTML = `
+                        <span class="status-pill online">Graph API ${escapeHtml(data.apiVersion || 'v22.0')}</span>
+                        <span class="status-pill online">Quality: ${escapeHtml(data.qualityRating || 'GREEN')}</span>
+                        <span class="status-pill online">${escapeHtml(data.codeVerificationStatus || 'VERIFIED')}</span>
+                    `;
+                } else {
+                    metaStatusPills.innerHTML = `<span class="status-pill" style="background:#fee2e2; color:#991b1b;">Handshake Failed</span>`;
+                }
+            }
+
+            // 2. Update Account details grid
+            if (displayCloudVerifiedName) displayCloudVerifiedName.textContent = data.verifiedName || (isOk ? 'Verified Business' : '—');
+            if (displayCloudPhoneNumber) displayCloudPhoneNumber.textContent = data.displayPhoneNumber || (isOk ? 'Active' : '—');
+            if (displayCloudQuality) displayCloudQuality.textContent = data.qualityRating || (isOk ? 'NORMAL' : '—');
+            if (displayCloudPhoneId && data.phoneId) displayCloudPhoneId.textContent = data.phoneId;
+
+            // 3. Update Settings view test result card
+            if (boxSettingsTestResult) {
+                boxSettingsTestResult.style.display = 'block';
+                if (isOk) {
+                    boxSettingsTestResult.className = 'meta-status-banner success';
+                    boxSettingsTestResult.innerHTML = `
+                        <div style="display:flex; align-items:flex-start; gap:14px;">
+                            <div style="font-size:24px;">✅</div>
+                            <div style="flex:1;">
+                                <strong style="font-size:15px; color:#065f46; display:block;">Official Meta Graph API Handshake Successful!</strong>
+                                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-top:10px; font-size:13px; color:#047857;">
+                                    <div><strong>Verified Name:</strong> ${escapeHtml(data.verifiedName || 'N/A')}</div>
+                                    <div><strong>Display Phone:</strong> ${escapeHtml(data.displayPhoneNumber || 'N/A')}</div>
+                                    <div><strong>Quality Rating:</strong> ${escapeHtml(data.qualityRating || 'GREEN')}</div>
+                                    <div><strong>Status:</strong> ${escapeHtml(data.codeVerificationStatus || 'VERIFIED')}</div>
+                                    <div><strong>Messaging Limit:</strong> ${escapeHtml(data.messagingLimit || 'STANDARD')}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    boxSettingsTestResult.className = 'meta-status-banner danger';
+                    boxSettingsTestResult.innerHTML = `
+                        <div style="display:flex; align-items:flex-start; gap:14px;">
+                            <div style="font-size:24px;">❌</div>
+                            <div style="flex:1;">
+                                <strong style="font-size:15px; color:#991b1b; display:block;">Meta Cloud API Handshake Failed</strong>
+                                <div style="font-size:13px; color:#b91c1c; margin-top:6px; word-break:break-word;">
+                                    ${escapeHtml(data.error || 'Failed to authenticate with Meta Graph API. Please verify your Phone Number ID and Access Token.')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Fetch Approved Templates from Meta
+        async function loadApprovedTemplates(force = false) {
+            if (btnRefreshTemplatesOverview) {
+                btnRefreshTemplatesOverview.disabled = true;
+                btnRefreshTemplatesOverview.innerHTML = '<span class="spinner" style="width:12px; height:12px;"></span> Loading...';
+            }
+            if (btnRefreshMetaTemplates) {
+                btnRefreshMetaTemplates.disabled = true;
+                btnRefreshMetaTemplates.innerHTML = '⏳ Loading...';
+            }
+
+            try {
+                const res = await fetch(`/api/whatsapp/cloud/templates${force ? '?force=true' : ''}`);
+                const data = await res.json();
+                cachedCloudTemplates = data.templates || [];
+
+                // 1. Populate Dropdown in Composer
+                if (selectMetaTemplate) {
+                    if (cachedCloudTemplates.length) {
+                        selectMetaTemplate.innerHTML = `
+                            <option value="">-- Custom Text Message (Standard) --</option>
+                            ${cachedCloudTemplates.map(t => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)} (${escapeHtml(t.category)} - ${escapeHtml(t.language)})</option>`).join('')}
+                        `;
+                    } else {
+                        selectMetaTemplate.innerHTML = `<option value="">-- No Approved Templates Found --</option>`;
+                    }
+                }
+
+                // 2. Populate Templates Overview Grid
+                if (containerMetaTemplates) {
+                    if (!cachedCloudTemplates.length) {
+                        containerMetaTemplates.innerHTML = `
+                            <div style="grid-column:1/-1; text-align:center; padding:24px; color:var(--text-muted); font-size:13.5px;">
+                                No approved templates found on your Meta Business Account. You can create templates in Meta WhatsApp Manager.
+                            </div>
+                        `;
+                    } else {
+                        containerMetaTemplates.innerHTML = cachedCloudTemplates.map(t => {
+                            const bodyComponent = (t.components || []).find(c => c.type === 'BODY');
+                            const bodyText = bodyComponent ? bodyComponent.text : '';
+                            return `
+                                <div class="template-card">
+                                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                                        <strong style="font-size:14px; color:var(--text-heading); word-break:break-word;">${escapeHtml(t.name)}</strong>
+                                        <span class="badge-official" style="font-size:10.5px;">${escapeHtml(t.status || 'APPROVED')}</span>
+                                    </div>
+                                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+                                        <span>Category: <strong>${escapeHtml(t.category)}</strong></span> &bull; 
+                                        <span>Language: <strong>${escapeHtml(t.language)}</strong></span>
+                                    </div>
+                                    <div style="font-size:12.5px; color:var(--text-body); background:var(--bg-subtle); padding:10px 12px; border-radius:6px; margin-bottom:12px; max-height:90px; overflow-y:auto; line-height:1.45;">
+                                        ${escapeHtml(bodyText || 'Template message format')}
+                                    </div>
+                                    <button type="button" class="btn btn-secondary btn-use-template" data-tname="${escapeHtml(t.name)}" style="width:100%; padding:6px 12px; font-size:12.5px;">
+                                        <span>⚡ Use in Campaign</span>
+                                    </button>
+                                </div>
+                            `;
+                        }).join('');
+
+                        containerMetaTemplates.querySelectorAll('.btn-use-template').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                const tname = btn.getAttribute('data-tname');
+                                const t = cachedCloudTemplates.find(x => x.name === tname);
+                                if (t) {
+                                    switchConnectionMode('cloud_api', true);
+                                    if (selectMetaTemplate) selectMetaTemplate.value = t.name;
+                                    const bodyComp = (t.components || []).find(c => c.type === 'BODY');
+                                    if (bodyComp && inputMessageText) {
+                                        inputMessageText.value = bodyComp.text;
+                                        inputMessageText.dispatchEvent(new Event('input'));
+                                    }
+                                    switchView('view-send');
+                                }
+                            });
+                        });
+                    }
+                }
+            } catch (err) {
+                console.warn('Fetch templates error:', err);
+                if (containerMetaTemplates) {
+                    containerMetaTemplates.innerHTML = `<div style="grid-column:1/-1; color:var(--danger); padding:14px; text-align:center;">Failed to load templates: ${escapeHtml(err.message)}</div>`;
+                }
+            } finally {
+                if (btnRefreshTemplatesOverview) {
+                    btnRefreshTemplatesOverview.disabled = false;
+                    btnRefreshTemplatesOverview.innerHTML = '<span>🔄 Fetch Templates from Meta</span>';
+                }
+                if (btnRefreshMetaTemplates) {
+                    btnRefreshMetaTemplates.disabled = false;
+                    btnRefreshMetaTemplates.innerHTML = '🔄 Refresh Templates';
+                }
+            }
+        }
+
+        btnRefreshMetaTemplates?.addEventListener('click', () => loadApprovedTemplates(true));
+        btnRefreshTemplatesOverview?.addEventListener('click', () => loadApprovedTemplates(true));
+
+        // When template dropdown changes in composer, auto-populate message text
+        selectMetaTemplate?.addEventListener('change', () => {
+            const val = selectMetaTemplate.value;
+            if (!val) return;
+            const t = cachedCloudTemplates.find(x => x.name === val);
+            if (t) {
+                const bodyComp = (t.components || []).find(c => c.type === 'BODY');
+                if (bodyComp && inputMessageText) {
+                    inputMessageText.value = bodyComp.text;
+                    inputMessageText.dispatchEvent(new Event('input'));
+                }
+            }
+        });
+
+        // Combined Providers Status Polling
+        async function fetchProvidersStatus() {
+            try {
+                const res = await fetch('/api/whatsapp/providers/status');
+                const data = await res.json();
+                if (!data || !data.success) return;
+
+                const mode = data.activeMode || 'web_qr';
+                if (mode !== activeProviderMode) {
+                    activeProviderMode = mode;
+                    syncProviderModeUI();
+                }
+
+                const cloud = data.providers?.cloud_api;
+                const web = data.providers?.web_qr;
+
+                const headerDot = document.getElementById('headerStatusDot');
+                const headerText = document.getElementById('headerStatusText');
+
+                if (mode === 'cloud_api') {
+                    if (cloud && cloud.status === 'CONNECTED' && cloud.phone) {
+                        if (headerDot) headerDot.className = 'status-dot online';
+                        if (headerText) headerText.textContent = `☁️ Meta Cloud: +${cloud.phone}`;
+                    } else {
+                        if (headerDot) headerDot.className = 'status-dot waiting';
+                        if (headerText) headerText.textContent = '☁️ Meta Cloud: Pending Setup';
+                    }
+                } else {
+                    if (web && web.status === 'CONNECTED' && web.phone) {
+                        if (headerDot) headerDot.className = 'status-dot online';
+                        if (headerText) headerText.textContent = `📱 Web/QR: +${web.phone}`;
+                    } else if (web && web.status === 'SCAN_QR') {
+                        if (headerDot) headerDot.className = 'status-dot waiting';
+                        if (headerText) headerText.textContent = '📱 Scan QR to link';
+                    } else {
+                        if (headerDot) headerDot.className = 'status-dot';
+                        if (headerText) headerText.textContent = '📱 Web/QR: Disconnected';
+                    }
+                }
+            } catch (e) {
+                console.warn('Provider status error:', e.message);
+            }
+        }
+
+        // =====================================================================
+        // 11. INITIALIZATION
+        // =====================================================================
+        fetchWhatsAppStatus();
+        ensureQrLoaded();
+        loadCloudSettings();
+        fetchProvidersStatus();
+
+        statusPollTimer = setInterval(() => {
+            fetchWhatsAppStatus();
+            fetchProvidersStatus();
+        }, 3000);
+    </script>
+</body>
+</html>
+
