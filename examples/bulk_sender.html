@@ -52,6 +52,43 @@
             --shadow-lg: 0 10px 30px -4px rgba(0, 0, 0, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
         }
 
+        [data-theme="dark"] {
+            /* Dark Mode Human-tailored Palette */
+            --bg-page: #0b1329;
+            --bg-card: #151f38;
+            --bg-subtle: #1e294b;
+            --bg-hover: #273559;
+            --border-color: #2b395b;
+            --border-subtle: #1f2c4a;
+            --border-focus: #25d366;
+            
+            /* WhatsApp Signature Colors - Dark Tone */
+            --wa-green: #25d366;
+            --wa-teal: #14b8a6;
+            --wa-dark-teal: #2dd4bf;
+            --wa-light-green: rgba(37, 211, 102, 0.15);
+            --wa-bubble-me: #064e3b;
+            
+            /* Neutral Text Colors */
+            --text-heading: #f8fafc;
+            --text-body: #cbd5e1;
+            --text-muted: #94a3b8;
+            --text-light: #64748b;
+            
+            /* Action & Status */
+            --danger: #f87171;
+            --danger-light: rgba(239, 68, 68, 0.2);
+            --warning: #fbbf24;
+            --warning-light: rgba(245, 158, 11, 0.2);
+            --success: #34d399;
+            --success-light: rgba(16, 185, 129, 0.2);
+            
+            /* Soft Natural Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -66,11 +103,12 @@
             line-height: 1.55;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
         /* Top Header Navbar */
         header.top-navbar {
-            background: #ffffff;
+            background: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
@@ -81,6 +119,7 @@
             justify-content: space-between;
             gap: 20px;
             box-shadow: var(--shadow-sm);
+            transition: background 0.25s ease, border-color 0.25s ease;
         }
 
         .brand-container {
@@ -147,10 +186,11 @@
         }
 
         .nav-btn.active {
-            background: #ffffff;
-            color: var(--wa-dark-teal);
+            background: var(--bg-card);
+            color: var(--wa-teal);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             font-weight: 700;
+            border: 1px solid var(--border-color);
         }
 
         /* Status Badge in Header */
@@ -167,11 +207,12 @@
             cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
+            color: var(--text-heading);
         }
 
         .header-status-badge:hover {
-            background: #ffffff;
-            border-color: #cbd5e1;
+            background: var(--bg-hover);
+            border-color: var(--border-focus);
             box-shadow: var(--shadow-sm);
         }
 
@@ -196,9 +237,9 @@
 
         /* Main App Container */
         main.main-content {
-            max-width: 1060px;
+            max-width: 1280px;
             margin: 32px auto 60px auto;
-            padding: 0 24px;
+            padding: 0 28px;
         }
 
         /* Content Views */
@@ -273,7 +314,7 @@
 
         .input-text, .select-input, .textarea-input {
             width: 100%;
-            background: #ffffff;
+            background: var(--bg-card);
             border: 1.5px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 12px 16px;
@@ -293,7 +334,7 @@
             display: flex;
             border: 1.5px solid var(--border-color);
             border-radius: var(--radius-md);
-            background: #ffffff;
+            background: var(--bg-card);
             overflow: hidden;
             transition: all 0.2s ease;
         }
@@ -322,6 +363,7 @@
             padding: 12px 16px;
             font-size: 15px;
             color: var(--text-heading);
+            background: transparent;
             outline: none;
             font-family: inherit;
         }
@@ -364,7 +406,7 @@
         }
 
         .btn-secondary {
-            background: #ffffff;
+            background: var(--bg-card);
             border: 1.5px solid var(--border-color);
             color: var(--text-heading);
             box-shadow: var(--shadow-sm);
@@ -372,7 +414,7 @@
 
         .btn-secondary:hover:not(:disabled) {
             background: var(--bg-subtle);
-            border-color: #cbd5e1;
+            border-color: var(--wa-teal);
             transform: translateY(-1px);
         }
 
@@ -425,13 +467,13 @@
 
         .login-tab-button:hover {
             color: var(--text-heading);
-            background: rgba(255, 255, 255, 0.7);
+            background: var(--bg-hover);
         }
 
         .login-tab-button.active {
-            background: #ffffff;
-            color: var(--wa-dark-teal);
-            border-color: var(--border-color);
+            background: var(--bg-card);
+            color: var(--wa-teal);
+            border-color: var(--border-focus);
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
         }
 
@@ -453,8 +495,8 @@
         }
 
         .qr-display-box {
-            background: #ffffff;
-            border: 2px solid #e2e8f0;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 24px;
             display: inline-flex;
@@ -473,12 +515,15 @@
             height: 250px;
             display: block;
             border-radius: var(--radius-md);
+            background: #ffffff;
+            padding: 10px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
         }
 
         /* Pairing Code Display Card */
         .code-display-card {
-            background: #ffffff;
-            border: 2px solid #a7f3d0;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 26px;
             margin: 22px 0;
@@ -503,7 +548,7 @@
 
         /* Step-by-Step Instructions List */
         .step-instruction-box {
-            background: #f8fafc;
+            background: var(--bg-subtle);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 18px 22px;
@@ -572,13 +617,15 @@
         }
 
         /* Composer 2-Column Grid */
+        /* Composer 2-Column Grid */
         .composer-layout {
             display: grid;
-            grid-template-columns: 1fr 360px;
-            gap: 24px;
+            grid-template-columns: minmax(0, 1.4fr) minmax(420px, 480px);
+            gap: 28px;
+            align-items: start;
         }
 
-        @media (max-width: 920px) {
+        @media (max-width: 1100px) {
             .composer-layout {
                 grid-template-columns: 1fr;
             }
@@ -622,33 +669,52 @@
         /* Dispatch Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+            gap: 8px;
             margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .stat-card {
             background: var(--bg-subtle);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            padding: 14px 10px;
+            padding: 10px 4px;
             text-align: center;
+            min-width: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.15s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-1px);
         }
 
         .stat-number {
-            font-size: 22px;
+            font-size: 19px;
             font-weight: 800;
             color: var(--text-heading);
             font-family: 'JetBrains Mono', monospace;
+            line-height: 1.2;
+            word-break: break-all;
         }
 
         .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-top: 2px;
+            margin-top: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
         }
 
         /* Progress Bar */
@@ -685,7 +751,7 @@
 
         /* Connection Mode Switcher */
         .provider-switch-container {
-            background: #ffffff;
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 16px 22px;
@@ -729,8 +795,9 @@
         }
 
         .provider-toggle-btn.active {
-            background: #ffffff;
-            color: var(--wa-dark-teal);
+            background: var(--bg-card);
+            color: var(--wa-teal);
+            border: 1px solid var(--border-color);
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
@@ -759,7 +826,7 @@
             border: 2px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 12px 14px;
-            background: #ffffff;
+            background: var(--bg-card);
             cursor: pointer;
             display: flex;
             align-items: flex-start;
@@ -768,8 +835,8 @@
         }
 
         .provider-radio-card:hover {
-            border-color: #cbd5e1;
-            background: #f8fafc;
+            border-color: var(--wa-teal);
+            background: var(--bg-subtle);
         }
 
         .provider-radio-card.active {
@@ -810,7 +877,7 @@
             font-weight: 700;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
-            background: #ffffff;
+            background: var(--bg-card);
             color: var(--text-heading);
             cursor: pointer;
             white-space: nowrap;
@@ -864,7 +931,7 @@
         }
 
         .template-item-card {
-            background: #ffffff;
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 14px 16px;
@@ -877,6 +944,748 @@
         .template-item-card:hover {
             border-color: var(--wa-teal);
             box-shadow: var(--shadow-sm);
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-subtle);
+            border: 1.5px solid var(--border-color);
+            padding: 7px 15px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-heading);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            font-family: inherit;
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--wa-teal);
+            transform: translateY(-1px);
+        }
+
+        /* Emergency Stop Button */
+        .btn-emergency {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: #ffffff !important;
+            border: 1.5px solid #b91c1c !important;
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+            font-weight: 800;
+        }
+
+        .btn-emergency:hover {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45);
+        }
+
+        /* Variable Personalization Chips */
+        .variable-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+            align-items: center;
+        }
+
+        .variable-chip {
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: var(--radius-full);
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            color: var(--wa-dark-teal);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'JetBrains Mono', monospace;
+            user-select: none;
+        }
+
+        .variable-chip:hover {
+            background: var(--wa-light-green);
+            border-color: var(--wa-teal);
+            transform: scale(1.03);
+        }
+
+        /* Campaign Overview Card */
+        .overview-card-container {
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 22px 26px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 24px;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .overview-stat-box {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .overview-stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .overview-stat-val {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-heading);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Campaign Activity Logs Table */
+        .activity-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            margin-top: 14px;
+        }
+
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .activity-table th {
+            background: var(--bg-subtle);
+            color: var(--text-heading);
+            padding: 12px 16px;
+            font-weight: 700;
+            border-bottom: 1.5px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .activity-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-body);
+            vertical-align: middle;
+        }
+
+        .activity-table tr:hover td {
+            background: var(--bg-hover);
+        }
+
+        /* Status Filters */
+        .filter-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .filter-tab-btn {
+            border: 1px solid var(--border-color);
+            background: var(--bg-subtle);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .filter-tab-btn:hover {
+            color: var(--text-heading);
+            border-color: var(--wa-teal);
+        }
+
+        .filter-tab-btn.active {
+            background: var(--wa-teal);
+            color: #ffffff;
+            border-color: var(--wa-teal);
+        }
+
+        /* Accounts Grid */
+        .accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .account-card {
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .account-card:hover {
+            border-color: var(--wa-teal);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        /* Modal Dialog */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(11, 19, 41, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-dialog {
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 580px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px;
+            box-shadow: var(--shadow-lg);
+            animation: softFadeIn 0.2s ease-out;
+        }
+
+        /* ============================================================== */
+        /* COMPREHENSIVE HIGH-CONTRAST DARK MODE ENGINE                  */
+        /* ============================================================== */
+        [data-theme="dark"] {
+            /* Sleek Dark Mode Human-tailored Palette */
+            --bg-page: #0a0f1d;
+            --bg-card: #131d33;
+            --bg-subtle: #1a2744;
+            --bg-hover: #22345a;
+            --border-color: #2b3e6b;
+            --border-subtle: #1c2b4d;
+            --border-focus: #25d366;
+            
+            /* WhatsApp Signature Colors - Dark Tone */
+            --wa-green: #25d366;
+            --wa-teal: #14b8a6;
+            --wa-dark-teal: #2dd4bf;
+            --wa-light-green: rgba(37, 211, 102, 0.16);
+            --wa-bubble-me: #064e3b;
+            
+            /* High-Contrast Neutral Text Colors */
+            --text-heading: #f8fafc;
+            --text-body: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-light: #64748b;
+            
+            /* Action & Status */
+            --danger: #f87171;
+            --danger-light: rgba(239, 68, 68, 0.22);
+            --warning: #fbbf24;
+            --warning-light: rgba(245, 158, 11, 0.22);
+            --success: #34d399;
+            --success-light: rgba(16, 185, 129, 0.22);
+            
+            /* Soft Glowing Natural Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
+            --shadow-md: 0 4px 18px rgba(0, 0, 0, 0.65);
+            --shadow-lg: 0 10px 32px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Top Header Navbar */
+        [data-theme="dark"] header.top-navbar {
+            background: #111a2e !important;
+            border-bottom: 1px solid #243559 !important;
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        /* Nav Tabs Switcher */
+        [data-theme="dark"] .nav-tabs {
+            background: #16223b !important;
+            border: 1px solid #26385d !important;
+        }
+
+        [data-theme="dark"] .nav-btn {
+            color: #94a3b8 !important;
+        }
+
+        [data-theme="dark"] .nav-btn:hover {
+            color: #f8fafc !important;
+            background: #1e2e4f !important;
+        }
+
+        [data-theme="dark"] .nav-btn.active {
+            background: #1f3258 !important;
+            color: #25d366 !important;
+            border: 1px solid #2e477a !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        /* Theme Toggle Button */
+        [data-theme="dark"] .theme-toggle-btn {
+            background: #1a2744 !important;
+            border-color: #2b3e6b !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .theme-toggle-btn:hover {
+            background: #22345a !important;
+            border-color: #25d366 !important;
+        }
+
+        /* Header Status Badge */
+        [data-theme="dark"] .header-status-badge {
+            background: #18253f !important;
+            border-color: #2b3e6b !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .header-status-badge:hover {
+            background: #22345a !important;
+            border-color: #3b5288 !important;
+        }
+
+        /* Provider Connection Switcher Card */
+        [data-theme="dark"] .provider-switch-container {
+            background: #131d33 !important;
+            border-color: #2b3e6b !important;
+            box-shadow: var(--shadow-md) !important;
+        }
+
+        [data-theme="dark"] #textCurrentActiveMode {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .provider-toggle-group {
+            background: #18253f !important;
+            border-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] .provider-toggle-btn {
+            color: #94a3b8 !important;
+        }
+
+        [data-theme="dark"] .provider-toggle-btn:hover {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .provider-toggle-btn.active {
+            background: #1f3258 !important;
+            color: #25d366 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid #2e477a !important;
+        }
+
+        [data-theme="dark"] .badge-official {
+            background: rgba(14, 165, 233, 0.2) !important;
+            color: #38bdf8 !important;
+            border-color: rgba(56, 189, 248, 0.35) !important;
+        }
+
+        /* Cards & Card Headers */
+        [data-theme="dark"] .card {
+            background: #131d33 !important;
+            border-color: #2b3e6b !important;
+            box-shadow: var(--shadow-md) !important;
+        }
+
+        [data-theme="dark"] .card-header {
+            border-bottom-color: #223254 !important;
+        }
+
+        [data-theme="dark"] .card-title {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .card-desc {
+            color: #94a3b8 !important;
+        }
+
+        /* Login Method Tabs */
+        [data-theme="dark"] .login-tabs-container {
+            background: #18253f !important;
+            border: 1px solid #2b3e6b !important;
+        }
+
+        [data-theme="dark"] .login-tab-button {
+            color: #94a3b8 !important;
+        }
+
+        [data-theme="dark"] .login-tab-button:hover {
+            color: #f8fafc !important;
+            background: #1f3258 !important;
+        }
+
+        [data-theme="dark"] .login-tab-button.active {
+            background: #1f3258 !important;
+            color: #25d366 !important;
+            border-color: #25d366 !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+        }
+
+        /* QR Code Container Box */
+        [data-theme="dark"] .qr-display-box {
+            background: #18253f !important;
+            border: 2px solid #2b3e6b !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        [data-theme="dark"] .qr-display-box img {
+            background: #ffffff !important;
+            padding: 12px !important;
+            border-radius: var(--radius-md) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        /* Step Instruction Box */
+        [data-theme="dark"] .step-instruction-box {
+            background: #18253f !important;
+            border: 1px solid #2b3e6b !important;
+            color: #cbd5e1 !important;
+        }
+
+        [data-theme="dark"] .step-instruction-box strong {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .step-instruction-box li {
+            color: #cbd5e1 !important;
+        }
+
+        /* Pairing Code Display Card */
+        [data-theme="dark"] .code-display-card {
+            background: #18253f !important;
+            border-color: #059669 !important;
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.25) !important;
+        }
+
+        [data-theme="dark"] .code-text {
+            background: rgba(37, 211, 102, 0.15) !important;
+            color: #34d399 !important;
+            border-color: #059669 !important;
+        }
+
+        /* Connected View Card Banner */
+        [data-theme="dark"] .connected-banner {
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.5), rgba(4, 120, 87, 0.3)) !important;
+            border: 2px solid #059669 !important;
+        }
+
+        [data-theme="dark"] .connected-phone {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] #displayConnectedName {
+            color: #a7f3d0 !important;
+        }
+
+        /* Inputs, Selects, and Textareas */
+        [data-theme="dark"] .input-text,
+        [data-theme="dark"] .select-input,
+        [data-theme="dark"] .textarea-input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] input[type="text"],
+        [data-theme="dark"] input[type="password"],
+        [data-theme="dark"] input[type="number"],
+        [data-theme="dark"] input[type="datetime-local"],
+        [data-theme="dark"] textarea {
+            background-color: #16223b !important;
+            border-color: #2b3e6b !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .input-text:focus,
+        [data-theme="dark"] .select-input:focus,
+        [data-theme="dark"] .textarea-input:focus,
+        [data-theme="dark"] select:focus,
+        [data-theme="dark"] textarea:focus {
+            border-color: #25d366 !important;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2) !important;
+        }
+
+        [data-theme="dark"] .input-group {
+            background: #16223b !important;
+            border-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] .input-group input {
+            background: transparent !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .input-group-badge {
+            background: #1a2744 !important;
+            border-color: #2b3e6b !important;
+            color: #94a3b8 !important;
+        }
+
+        /* Secondary & Action Buttons */
+        [data-theme="dark"] .btn-secondary {
+            background: #18253f !important;
+            border-color: #2b3e6b !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .btn-secondary:hover:not(:disabled) {
+            background: #22345a !important;
+            border-color: #3b5288 !important;
+            color: #ffffff !important;
+        }
+
+        [data-theme="dark"] .copy-btn {
+            background: #18253f !important;
+            border-color: #2b3e6b !important;
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .copy-btn:hover {
+            background: #22345a !important;
+            border-color: #25d366 !important;
+        }
+
+        /* Provider Radio Cards */
+        [data-theme="dark"] .provider-radio-card {
+            background: #16223b !important;
+            border-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] .provider-radio-card:hover {
+            background: #1e2e4f !important;
+            border-color: #3b5288 !important;
+        }
+
+        [data-theme="dark"] .provider-radio-card.active {
+            background: rgba(37, 211, 102, 0.12) !important;
+            border-color: #25d366 !important;
+        }
+
+        [data-theme="dark"] .provider-radio-card strong {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .provider-radio-card span {
+            color: #94a3b8 !important;
+        }
+
+        /* Overview Card & Stats */
+        [data-theme="dark"] .overview-card-container {
+            background: #131d33 !important;
+            border-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] .overview-stat-box {
+            background: #18253f !important;
+            border-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] .overview-stat-label {
+            color: #94a3b8 !important;
+        }
+
+        [data-theme="dark"] .overview-stat-val {
+            color: #f8fafc !important;
+        }
+
+        /* Tables & Lists */
+        [data-theme="dark"] .activity-table-wrapper {
+            background: #131d33 !important;
+            border-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] .activity-table th {
+            background: #18253f !important;
+            color: #f8fafc !important;
+            border-bottom-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] .activity-table td {
+            border-bottom-color: #1e2d4d !important;
+            color: #cbd5e1 !important;
+        }
+
+        [data-theme="dark"] .activity-table tr:hover td {
+            background: #1a2846 !important;
+        }
+
+        [data-theme="dark"] .filter-tab-btn {
+            background: #18253f !important;
+            border-color: #2b3e6b !important;
+            color: #94a3b8 !important;
+        }
+
+        [data-theme="dark"] .filter-tab-btn:hover {
+            color: #f8fafc !important;
+            border-color: #25d366 !important;
+        }
+
+        [data-theme="dark"] .filter-tab-btn.active {
+            background: #128c7e !important;
+            color: #ffffff !important;
+            border-color: #25d366 !important;
+        }
+
+        /* Variable Chips */
+        [data-theme="dark"] .variable-chip {
+            background: #18253f !important;
+            border-color: #2b3e6b !important;
+            color: #2dd4bf !important;
+        }
+
+        [data-theme="dark"] .variable-chip:hover {
+            background: rgba(37, 211, 102, 0.18) !important;
+            border-color: #25d366 !important;
+            color: #34d399 !important;
+        }
+
+        /* Account Cards & Modals */
+        [data-theme="dark"] .account-card {
+            background: #131d33 !important;
+            border-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] .account-card:hover {
+            border-color: #25d366 !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        [data-theme="dark"] .modal-overlay {
+            background: rgba(5, 9, 20, 0.85) !important;
+        }
+
+        [data-theme="dark"] .modal-dialog {
+            background: #131d33 !important;
+            border-color: #2b3e6b !important;
+        }
+
+        /* Chat / Inbox View */
+        [data-theme="dark"] #boxChatList {
+            background: #111a2e !important;
+            border-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] #boxChatTitle {
+            background: #16223b !important;
+            border-color: #2b3e6b !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] #boxChatInputArea {
+            background: #16223b !important;
+            border-color: #2b3e6b !important;
+        }
+
+        [data-theme="dark"] #view-inbox [style*="background:#efeae2"] {
+            background: #090e1a !important;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) !important;
+        }
+
+        /* Live Logs Console */
+        [data-theme="dark"] #boxLiveLogs {
+            background: #080d1a !important;
+            border-color: #2b3e6b !important;
+            color: #94a3b8 !important;
+        }
+
+        /* Inline Banner Overrides for Notice Boxes */
+        [data-theme="dark"] div[style*="background:#eff6ff"] {
+            background: rgba(30, 58, 138, 0.25) !important;
+            border-color: #1e40af !important;
+        }
+
+        [data-theme="dark"] div[style*="background:#eff6ff"] strong,
+        [data-theme="dark"] div[style*="background:#eff6ff"] p {
+            color: #bfdbfe !important;
+        }
+
+        [data-theme="dark"] div[style*="background:#ecfdf5"] {
+            background: rgba(6, 78, 59, 0.25) !important;
+            border-color: #059669 !important;
+        }
+
+        [data-theme="dark"] div[style*="background:#ecfdf5"] strong,
+        [data-theme="dark"] div[style*="background:#ecfdf5"] p {
+            color: #a7f3d0 !important;
+        }
+
+        [data-theme="dark"] div[style*="background:#fef2f2"] {
+            background: rgba(153, 27, 27, 0.25) !important;
+            border-color: #dc2626 !important;
+        }
+
+        [data-theme="dark"] div[style*="background:#fef2f2"] strong,
+        [data-theme="dark"] div[style*="background:#fef2f2"] p,
+        [data-theme="dark"] div[style*="background:#fef2f2"] div {
+            color: #fca5a5 !important;
+        }
+
+        /* Text Contrast Safety Guarantees */
+        [data-theme="dark"] strong {
+            color: #f8fafc;
+        }
+
+        [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4 {
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] p {
+            color: #cbd5e1;
+        }
+
+        [data-theme="dark"] .form-label {
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .form-hint {
+            color: #94a3b8 !important;
+        }
+
+        /* Meta Status Indicator Card */
+        [data-theme="dark"] .meta-status-banner.connected {
+            background: rgba(16, 185, 129, 0.15) !important;
+            border-color: #059669 !important;
+        }
+
+        [data-theme="dark"] .meta-status-banner.error {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border-color: #dc2626 !important;
+        }
+
+        [data-theme="dark"] .meta-status-banner.warning {
+            background: rgba(245, 158, 11, 0.15) !important;
+            border-color: #d97706 !important;
         }
     </style>
 </head>
@@ -897,8 +1706,14 @@
             <button class="nav-btn active" id="tabBtnConnect" data-target="view-connect" type="button">
                 <span>🔗</span> <span>Connect WhatsApp</span>
             </button>
+            <button class="nav-btn" id="tabBtnNumbers" data-target="view-numbers" type="button">
+                <span>📱</span> <span>WhatsApp Numbers</span>
+            </button>
             <button class="nav-btn" id="tabBtnSend" data-target="view-send" type="button">
-                <span>✉️</span> <span>Send Messages</span>
+                <span>✉️</span> <span>Campaigns & Composer</span>
+            </button>
+            <button class="nav-btn" id="tabBtnOptOuts" data-target="view-optouts" type="button">
+                <span>🛑</span> <span>Opt-Outs</span>
             </button>
             <button class="nav-btn" id="tabBtnInbox" data-target="view-inbox" type="button">
                 <span>💬</span> <span>Chats</span>
@@ -908,10 +1723,18 @@
             </button>
         </nav>
 
-        <!-- Live Status Pill in Header -->
-        <div class="header-status-badge" id="headerStatusBadge" title="Click to view connection status">
-            <span class="status-dot" id="headerStatusDot"></span>
-            <span id="headerStatusText">Checking connection...</span>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <!-- Dark Mode Toggle Button -->
+            <button class="theme-toggle-btn" id="btnThemeToggle" type="button" title="Toggle Dark / Light Mode">
+                <span id="themeToggleIcon">🌙</span>
+                <span id="themeToggleText">Dark</span>
+            </button>
+
+            <!-- Live Status Pill in Header -->
+            <div class="header-status-badge" id="headerStatusBadge" title="Click to view connection status">
+                <span class="status-dot" id="headerStatusDot"></span>
+                <span id="headerStatusText">Checking connection...</span>
+            </div>
         </div>
     </header>
 
@@ -1244,22 +2067,204 @@
         </section>
 
         <!-- ============================================================== -->
-        <!-- VIEW 2: SEND MESSAGES (BULK & SINGLE WITH CUSTOM DELAY SECONDS)-->
+        <!-- VIEW 1.5: MULTIPLE WHATSAPP BUSINESS NUMBERS (MULTI-ACCOUNT)   -->
+        <!-- ============================================================== -->
+        <section id="view-numbers" class="content-view">
+            <div class="card">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h2 class="card-title">Authorized WhatsApp Business Numbers</h2>
+                        <p class="card-desc">Connect multiple official WhatsApp Business numbers. Each number maintains its own credentials, Phone Number ID, queue, delivery stats, and error logs.</p>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button type="button" class="btn btn-secondary" id="btnRefreshAccounts" style="padding:8px 16px; font-size:13px;">
+                            <span>🔄 Refresh Stats</span>
+                        </button>
+                        <button type="button" class="btn btn-primary" id="btnOpenAddAccountModal" style="padding:8px 20px; font-size:13px;">
+                            <span>➕ Connect Number</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Guidance Info Box -->
+                <div style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:20px;">🛡️</span>
+                        <div style="font-size:13px; color:var(--text-body);">
+                            <strong style="color:var(--text-heading);">Account Isolation & Credential Security:</strong>
+                            Campaign queues run independently per business number. Access tokens are encrypted and never exposed in client scripts.
+                        </div>
+                    </div>
+                    <span class="badge-official">Meta Cloud API Multi-Number</span>
+                </div>
+
+                <!-- WhatsApp Numbers Grid -->
+                <div id="gridWhatsAppAccounts" class="accounts-grid">
+                    <div style="grid-column:1/-1; text-align:center; padding:36px; color:var(--text-muted); font-size:14px;">
+                        Loading connected WhatsApp Business numbers...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 1.8: OPT-OUTS / DO-NOT-CONTACT (DNC) COMPLIANCE           -->
+        <!-- ============================================================== -->
+        <section id="view-optouts" class="content-view">
+            <div class="card">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h2 class="card-title">Do-Not-Contact / Opt-Out List</h2>
+                        <p class="card-desc">Contacts who have opted out. The campaign queue automatically checks this list and strictly skips sending messages to opted-out contacts.</p>
+                    </div>
+                    <span class="badge-official" style="background:#fee2e2; color:#991b1b; border-color:#fecaca;">Compliance Protected</span>
+                </div>
+
+                <!-- Add Opt-Out Form -->
+                <div style="background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:16px 20px; margin-bottom:20px;">
+                    <strong style="display:block; font-size:14px; color:var(--text-heading); margin-bottom:10px;">➕ Add Number to Opt-Out List</strong>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)) auto; gap:12px; align-items:flex-end;">
+                        <div>
+                            <label class="form-label" style="font-size:12px; margin-bottom:4px;">Phone Number (with Country Code)</label>
+                            <input type="text" id="inputOptOutPhone" class="input-text" placeholder="e.g. +15551234567 or 919876543210" style="padding:9px 14px; font-size:13.5px;" />
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-size:12px; margin-bottom:4px;">Reason / Source</label>
+                            <input type="text" id="inputOptOutReason" class="input-text" placeholder="e.g. Replied STOP, Unsubscribe request" style="padding:9px 14px; font-size:13.5px;" />
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="btnAddOptOut" style="padding:9px 20px; font-size:13.5px; height:42px;">
+                            <span>Add Opt-Out</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Opt-Outs Table -->
+                <div class="activity-table-wrapper">
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Phone Number</th>
+                                <th>Reason / Trigger</th>
+                                <th>Opted Out At</th>
+                                <th style="text-align:right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyOptOuts">
+                            <tr>
+                                <td colspan="4" style="text-align:center; padding:24px; color:var(--text-muted);">Loading opted-out contacts...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- VIEW 2: SEND MESSAGES & CAMPAIGN QUEUE                         -->
         <!-- ============================================================== -->
         <section id="view-send" class="content-view">
+            
+            <!-- Dashboard Campaign Overview Card (Live Real-Time Status) -->
+            <div class="overview-card-container" id="boxCampaignOverviewCard">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border-bottom:1px solid var(--border-subtle); padding-bottom:14px; margin-bottom:14px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:24px;">📊</span>
+                        <div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <strong style="font-size:16px; color:var(--text-heading);" id="overviewCampaignName">No Active Campaign</strong>
+                                <span id="overviewStatusBadge" style="font-size:11px; font-weight:800; padding:2px 10px; border-radius:var(--radius-full); text-transform:uppercase; background:var(--bg-subtle); color:var(--text-muted); border:1px solid var(--border-color);">IDLE</span>
+                            </div>
+                            <div style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">
+                                Connected Number: <strong id="overviewConnectedNumber" style="color:var(--text-heading);">Primary WhatsApp Line</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-secondary" id="btnOverviewPause" style="display:none; padding:7px 16px; font-size:12.5px;">
+                            <span>⏸️ Pause</span>
+                        </button>
+                        <button type="button" class="btn btn-primary" id="btnOverviewResume" style="display:none; padding:7px 16px; font-size:12.5px;">
+                            <span>▶️ Resume</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="btnOverviewCancel" style="display:none; padding:7px 14px; font-size:12.5px; color:var(--danger); border-color:var(--danger);">
+                            <span>⏹️ Stop</span>
+                        </button>
+                        <button type="button" class="btn btn-emergency" id="btnEmergencyStop" style="padding:7px 18px; font-size:12.5px;" title="Immediately halt all campaign queues across all numbers">
+                            <span>🚨 Emergency Stop All</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Overview Metrics Grid -->
+                <div class="overview-grid">
+                    <div class="overview-stat-box">
+                        <div class="overview-stat-label">Progress</div>
+                        <div class="overview-stat-val" id="overviewProgressText">0 / 0</div>
+                        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;" id="overviewProgressPercent">0% completed</div>
+                    </div>
+                    <div class="overview-stat-box">
+                        <div class="overview-stat-label">Current Batch</div>
+                        <div class="overview-stat-val" style="color:var(--wa-dark-teal);" id="overviewBatchProgress">0 / 20</div>
+                        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Messages before cooldown</div>
+                    </div>
+                    <div class="overview-stat-box">
+                        <div class="overview-stat-label">Next Scheduled Action</div>
+                        <div style="font-size:13.5px; font-weight:700; color:var(--text-heading); margin-top:4px;" id="overviewNextAction">
+                            Idle — queue waiting
+                        </div>
+                        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;" id="overviewNextActionSub">Ready to dispatch</div>
+                    </div>
+                    <div class="overview-stat-box">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div class="overview-stat-label" style="margin-bottom:0;">Delivery Results</div>
+                            <div style="font-size:11px; color:var(--text-muted); font-weight:600;" id="overviewLastApiResponse">API: 200 OK</div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; margin-top:8px;">
+                            <div style="text-align:center; padding:5px 2px; background:rgba(16, 185, 129, 0.12); border-radius:6px; border:1px solid rgba(16, 185, 129, 0.25);">
+                                <div style="font-size:9.5px; font-weight:700; color:#10b981; text-transform:uppercase;">Sent</div>
+                                <div style="font-size:15px; font-weight:800; color:#10b981; font-family:'JetBrains Mono',monospace;" id="overviewSentCount">0</div>
+                            </div>
+                            <div style="text-align:center; padding:5px 2px; background:rgba(2, 132, 199, 0.12); border-radius:6px; border:1px solid rgba(2, 132, 199, 0.25);">
+                                <div style="font-size:9.5px; font-weight:700; color:#0284c7; text-transform:uppercase;">Deliv</div>
+                                <div style="font-size:15px; font-weight:800; color:#0284c7; font-family:'JetBrains Mono',monospace;" id="overviewDeliveredCount">0</div>
+                            </div>
+                            <div style="text-align:center; padding:5px 2px; background:rgba(239, 68, 68, 0.12); border-radius:6px; border:1px solid rgba(239, 68, 68, 0.25);">
+                                <div style="font-size:9.5px; font-weight:700; color:#ef4444; text-transform:uppercase;">Fail</div>
+                                <div style="font-size:15px; font-weight:800; color:#ef4444; font-family:'JetBrains Mono',monospace;" id="overviewFailedCount">0</div>
+                            </div>
+                            <div style="text-align:center; padding:5px 2px; background:rgba(148, 163, 184, 0.12); border-radius:6px; border:1px solid rgba(148, 163, 184, 0.25);">
+                                <div style="font-size:9.5px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Skip</div>
+                                <div style="font-size:15px; font-weight:800; color:#94a3b8; font-family:'JetBrains Mono',monospace;" id="overviewSkippedCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-bar-bg" style="margin-top:16px;">
+                    <div class="progress-bar-fill" id="overviewProgressBarFill"></div>
+                </div>
+            </div>
+
             <div class="composer-layout">
                 
-                <!-- Left: Composer Form -->
+                <!-- Left: Campaign Composer & Settings Panel -->
                 <div>
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h2 class="card-title">Compose & Dispatch</h2>
-                                <p class="card-desc">Choose delivery provider, type your message, and set delivery interval.</p>
+                                <h2 class="card-title">Campaign Settings & Composer</h2>
+                                <p class="card-desc">Configure authorized number, contact list, message template, batch cooldown, and operational parameters.</p>
                             </div>
                         </div>
 
-                        <!-- Provider Selection for Campaign -->
+                        <!-- 1. Campaign Name -->
+                        <div class="form-group">
+                            <label class="form-label">Campaign Name</label>
+                            <input type="text" class="input-text" id="inputCampaignName" placeholder="e.g. October Leads Follow-up Campaign" />
+                        </div>
+
+                        <!-- 2. Dispatch Provider Selection -->
                         <div class="form-group" style="background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:14px 16px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
                                 <label class="form-label" style="margin-bottom:0; font-weight:700; color:var(--text-heading);">
@@ -1284,47 +2289,91 @@
                                         <span class="radio-icon">☁️</span>
                                         <div>
                                             <strong style="display:block; font-size:13.5px; color:var(--text-heading);">WhatsApp Cloud API <span class="badge-official">Meta Official</span></strong>
-                                            <span style="font-size:12px; color:var(--text-muted);">Meta Graph API with webhooks</span>
+                                            <span style="font-size:12px; color:var(--text-muted);">Multi-number Meta Graph API</span>
                                         </div>
                                     </div>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- Cloud API Approved Templates Selector (Shown when Cloud API is selected) -->
-                        <div id="boxCloudTemplateSelect" class="form-group" style="display:none; background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:var(--radius-md); padding:14px 16px;">
+                        <!-- 3. WhatsApp Business Number Selector (Accounts) -->
+                        <div class="form-group" id="boxCampaignAccountSelect" style="display:none; background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:14px 16px;">
+                            <label class="form-label" style="font-weight:700; color:var(--text-heading);">
+                                📱 WhatsApp Business Number (Queue Account)
+                            </label>
+                            <select id="selectCampaignAccount" class="input-text" style="width:100%; font-weight:600;">
+                                <option value="">-- Primary Active WhatsApp Account --</option>
+                            </select>
+                            <p class="form-hint">Messages in this campaign will be dispatched strictly through the selected authorized number.</p>
+                        </div>
+
+                        <!-- 4. Approved Meta Templates Selector -->
+                        <div id="boxCloudTemplateSelect" class="form-group" style="display:none; background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:14px 16px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
-                                <label class="form-label" style="margin-bottom:0; font-weight:700; color:#166534;">
+                                <label class="form-label" style="margin-bottom:0; font-weight:700; color:var(--text-heading);">
                                     📋 Approved Meta Templates (Optional)
                                 </label>
                                 <button type="button" class="btn btn-secondary" id="btnRefreshMetaTemplates" style="padding:4px 10px; font-size:11.5px;">🔄 Refresh Templates</button>
                             </div>
-                            <select id="selectMetaTemplate" class="input-text" style="width:100%; padding:8px 12px; font-size:13.5px; background:#fff;">
+                            <select id="selectMetaTemplate" class="input-text" style="width:100%; padding:8px 12px; font-size:13.5px;">
                                 <option value="">-- Custom Text Message (Standard) --</option>
                             </select>
-                            <p class="form-hint" style="color:#15803d; margin-top:6px;">Select an approved template from your Meta WABA to auto-fill the message body.</p>
+                            
+                            <!-- Template Preview & Dynamic Parameter Inputs -->
+                            <div id="boxTemplatePreviewCard" style="display:none; margin-top:12px; padding:14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+                                <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px;">
+                                    <span id="tplPreviewName">Template Preview</span>
+                                    <span id="tplPreviewLangBadge" class="badge-official">en_US</span>
+                                </div>
+                                <div id="tplPreviewBody" style="font-size:13.5px; color:var(--text-heading); white-space:pre-wrap; margin-bottom:12px; line-height:1.6; padding:10px; background:var(--bg-subtle); border-radius:var(--radius-sm);"></div>
+                                
+                                <div id="boxTemplateParamsInputs" style="display:none; border-top:1px solid var(--border-subtle); padding-top:12px;">
+                                    <strong style="display:block; font-size:12.5px; color:var(--text-heading); margin-bottom:8px;">Required Template Parameters:</strong>
+                                    <div id="containerTemplateParams" style="display:flex; flex-direction:column; gap:8px;"></div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Recipients Input -->
+                        <!-- 5. Recipients Input -->
                         <div class="form-group">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                                <label class="form-label" style="margin-bottom:0;">Recipient Phone Numbers</label>
+                                <label class="form-label" style="margin-bottom:0;">Contact List / Recipient Numbers</label>
                                 <span style="font-size:12.5px; font-weight:700; color:var(--wa-dark-teal); background:var(--wa-light-green); padding:3px 10px; border-radius:var(--radius-full);" id="badgeRecipientCount">0 recipients</span>
                             </div>
                             <textarea class="textarea-input" id="inputRecipients" rows="5" placeholder="Enter recipient numbers with country code (one per line or comma-separated)&#10;e.g.&#10;+15551234567&#10;919876543210&#10;447123456789"></textarea>
-                            <p class="form-hint">Tip: Paste any list of numbers. Leading country codes are automatically detected.</p>
+                            <p class="form-hint">Tip: Paste any list of numbers. Leading country codes are automatically detected. Opted-out numbers are permanently skipped.</p>
                         </div>
 
-                        <!-- Message Text Input -->
+                        <!-- 6. Message Text & Personalization Variables -->
                         <div class="form-group">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                                 <label class="form-label" style="margin-bottom:0;">Message Text</label>
                                 <span style="font-size:12px; color:var(--text-muted);" id="badgeCharCount">0 characters</span>
                             </div>
-                            <textarea class="textarea-input" id="inputMessageText" rows="6" placeholder="Hello! Type your WhatsApp message here..."></textarea>
+                            <textarea class="textarea-input" id="inputMessageText" rows="6" placeholder="Hello {name}! Thanks for contacting {company}..."></textarea>
+                            
+                            <!-- Personalization Chips -->
+                            <div class="variable-chips-container">
+                                <span style="font-size:12px; font-weight:700; color:var(--text-muted);">Insert Variable:</span>
+                                <button type="button" class="variable-chip" data-var="{name}">{name}</button>
+                                <button type="button" class="variable-chip" data-var="{phone}">{phone}</button>
+                                <button type="button" class="variable-chip" data-var="{company}">{company}</button>
+                                <button type="button" class="variable-chip" data-var="{custom_field}">{custom_field}</button>
+                            </div>
+
+                            <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                                <input type="checkbox" id="checkEnablePersonalization" checked style="accent-color:var(--wa-teal); width:16px; height:16px;" />
+                                <label for="checkEnablePersonalization" style="font-size:13px; font-weight:600; color:var(--text-heading); cursor:pointer;">Enable contact personalization before sending</label>
+                            </div>
+
+                            <!-- Live Sample Contact Preview -->
+                            <div id="boxPersonalizationPreview" style="margin-top:10px; padding:10px 14px; background:var(--bg-subtle); border:1px dashed var(--border-color); border-radius:var(--radius-md); font-size:12.5px; display:none;">
+                                <strong style="color:var(--text-heading); display:block; margin-bottom:4px;">👁️ Personalization Preview (Sample Contact):</strong>
+                                <div id="textPersonalizationPreview" style="color:var(--text-body); white-space:pre-wrap;"></div>
+                            </div>
                         </div>
 
-                        <!-- Image Attachment Upload -->
+                        <!-- 7. Image Attachment Upload -->
                         <div class="form-group">
                             <label class="form-label">Attach Image (Optional)</label>
                             <input type="file" id="inputFileAttachment" accept="image/*" style="font-size:13.5px;" />
@@ -1335,7 +2384,43 @@
                             </div>
                         </div>
 
-                        <!-- Delay Between Messages (Seconds) Control -->
+                        <!-- 8. Batch Pause / Operational Cooldown Settings -->
+                        <div class="form-group" style="background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:16px 18px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <label class="form-label" style="margin-bottom:0; font-weight:700; color:var(--text-heading);">
+                                    ⏸️ Batch Pause / Queue Cooldown
+                                </label>
+                                <span class="badge-official">Queue Control</span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:10px;">
+                                <div>
+                                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Messages per batch</label>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <input type="number" id="inputBatchSize" class="input-text" min="1" max="5000" value="20" style="padding:7px 10px; font-weight:700; text-align:center;" />
+                                        <span style="font-size:12px; font-weight:600; color:var(--text-muted);">msgs</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Pause after batch</label>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <input type="number" id="inputBatchPause" class="input-text" min="1" max="1440" value="10" style="padding:7px 10px; font-weight:700; text-align:center;" />
+                                        <span style="font-size:12px; font-weight:600; color:var(--text-muted);">minutes</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Max Campaign Size</label>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <input type="number" id="inputMaxCampaignSize" class="input-text" min="0" max="50000" value="0" placeholder="0 = Unlimited" style="padding:7px 10px; font-weight:700; text-align:center;" />
+                                        <span style="font-size:12px; font-weight:600; color:var(--text-muted);">total</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="form-hint" style="margin:0;">
+                                💡 Operational delay control: e.g. 20 messages → pause 10 minutes → resume automatically. Queue stops immediately if Meta reports policy/quality restrictions.
+                            </p>
+                        </div>
+
+                        <!-- 9. Delay Between Individual Messages Control -->
                         <div class="form-group" style="background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:16px 18px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                                 <label class="form-label" style="margin-bottom:0; font-weight:700; color:var(--text-heading);">
@@ -1346,22 +2431,34 @@
                                     <span style="font-size:13px; font-weight:700; color:var(--text-muted);">seconds</span>
                                 </div>
                             </div>
-                            
-                            <!-- Preset Buttons -->
                             <div class="delay-presets-container">
                                 <button type="button" class="delay-chip" data-sec="1">⚡ 1s (Fast)</button>
                                 <button type="button" class="delay-chip active" data-sec="3">🛡️ 3s (Recommended)</button>
                                 <button type="button" class="delay-chip" data-sec="5">🌿 5s (Safe)</button>
                                 <button type="button" class="delay-chip" data-sec="10">🔒 10s (Anti-Ban)</button>
                             </div>
-
                             <p class="form-hint" style="margin-top:8px;">
-                                💡 Waits <strong id="previewDelayText">3 seconds</strong> after sending to each person before sending to the next. Keeps delivery natural and protects your account.
+                                💡 Waits <strong id="previewDelayText">3 seconds</strong> after sending each message before proceeding to the next contact.
                             </p>
                         </div>
 
+                        <!-- 10. Compliance Stop & Scheduling -->
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:20px; background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px 16px;">
+                            <div style="display:flex; align-items:flex-start; gap:8px;">
+                                <input type="checkbox" id="checkStopOnError" checked style="accent-color:var(--danger); width:16px; height:16px; margin-top:2px;" />
+                                <div>
+                                    <label for="checkStopOnError" style="font-size:13px; font-weight:700; color:var(--text-heading); cursor:pointer;">Stop on API / policy error</label>
+                                    <div style="font-size:11.5px; color:var(--text-muted);">Immediately pauses the campaign queue if Meta reports policy enforcement or quality rate limits.</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size:12px; font-weight:600; color:var(--text-muted); display:block; margin-bottom:4px;">Schedule Campaign (Optional)</label>
+                                <input type="datetime-local" id="inputScheduleTime" class="input-text" style="padding:7px 10px; font-size:13px;" />
+                            </div>
+                        </div>
+
                         <!-- Action Buttons -->
-                        <div style="display:flex; gap:14px; align-items:center; margin-top:24px; flex-wrap:wrap;">
+                        <div style="display:flex; gap:12px; align-items:center; margin-top:24px; flex-wrap:wrap;">
                             <button class="btn btn-primary" id="btnStartCampaign" type="button" style="padding:13px 32px; font-size:15px;">
                                 <span>🚀 Send Message Campaign</span>
                             </button>
@@ -1370,7 +2467,7 @@
                     </div>
                 </div>
 
-                <!-- Right: Live Dispatch Status -->
+                <!-- Right: Live Dispatch Status & Queue Controls -->
                 <div>
                     <div class="card">
                         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
@@ -1394,26 +2491,26 @@
                             </div>
                         </div>
 
-                        <div class="stats-grid" style="grid-template-columns:repeat(5, 1fr);">
+                        <div class="stats-grid">
                             <div class="stat-card">
                                 <div class="stat-number" id="statTotal">0</div>
                                 <div class="stat-label">Total</div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-number" id="statSent" style="color:#059669;">0</div>
-                                <div class="stat-label">Sent</div>
+                            <div class="stat-card" style="background:rgba(16, 185, 129, 0.08); border-color:rgba(16, 185, 129, 0.25);">
+                                <div class="stat-number" id="statSent" style="color:#10b981;">0</div>
+                                <div class="stat-label" style="color:#10b981;">Sent</div>
                             </div>
-                            <div class="stat-card">
+                            <div class="stat-card" style="background:rgba(2, 132, 199, 0.08); border-color:rgba(2, 132, 199, 0.25);">
                                 <div class="stat-number" id="statDelivered" style="color:#0284c7;">0</div>
-                                <div class="stat-label">Delivered</div>
+                                <div class="stat-label" style="color:#0284c7;">Delivered</div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-number" id="statFailed" style="color:var(--danger);">0</div>
-                                <div class="stat-label">Failed</div>
+                            <div class="stat-card" style="background:rgba(239, 68, 68, 0.08); border-color:rgba(239, 68, 68, 0.25);">
+                                <div class="stat-number" id="statFailed" style="color:#ef4444;">0</div>
+                                <div class="stat-label" style="color:#ef4444;">Failed</div>
                             </div>
-                            <div class="stat-card">
-                                <div class="stat-number" id="statRemaining">0</div>
-                                <div class="stat-label">Pending</div>
+                            <div class="stat-card" style="background:rgba(245, 158, 11, 0.08); border-color:rgba(245, 158, 11, 0.25);">
+                                <div class="stat-number" id="statRemaining" style="color:#f59e0b;">0</div>
+                                <div class="stat-label" style="color:#f59e0b;">Pending</div>
                             </div>
                         </div>
 
@@ -1425,14 +2522,124 @@
                             Idle — ready to dispatch messages.
                         </div>
 
-                        <div style="max-height:280px; overflow-y:auto; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; background:#f8fafc; font-size:12.5px; font-family:'JetBrains Mono', monospace;" id="boxLiveLogs">
+                        <div style="max-height:280px; overflow-y:auto; border:1px solid var(--border-color); border-radius:var(--radius-md); padding:12px; background:var(--bg-subtle); color:var(--text-body); font-size:12.5px; font-family:'JetBrains Mono', monospace;" id="boxLiveLogs">
                             <div style="color:var(--text-muted);">No active campaign running.</div>
                         </div>
                     </div>
                 </div>
 
             </div>
+
+            <!-- Campaign Activity Table (Section 10) -->
+            <div class="card" style="margin-top:24px;">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h2 class="card-title">Campaign Activity & Delivery Logs</h2>
+                        <p class="card-desc">Detailed contact-level status tracking: Pending, Processing, Sent, Delivered, Failed, and Skipped.</p>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" class="btn btn-secondary" id="btnRefreshActivityLogs" style="padding:6px 14px; font-size:12px;">
+                            <span>🔄 Refresh Activity</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status Filter Tabs -->
+                <div class="filter-tabs" id="filterTabsCampaignLogs">
+                    <button type="button" class="filter-tab-btn active" data-filter="ALL">All Contacts</button>
+                    <button type="button" class="filter-tab-btn" data-filter="PENDING">Pending</button>
+                    <button type="button" class="filter-tab-btn" data-filter="PROCESSING">Processing</button>
+                    <button type="button" class="filter-tab-btn" data-filter="SENT">Sent</button>
+                    <button type="button" class="filter-tab-btn" data-filter="DELIVERED">Delivered</button>
+                    <button type="button" class="filter-tab-btn" data-filter="FAILED">Failed</button>
+                    <button type="button" class="filter-tab-btn" data-filter="SKIPPED">Skipped</button>
+                </div>
+
+                <!-- Activity Table -->
+                <div class="activity-table-wrapper">
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Contact / Name</th>
+                                <th>Phone Number</th>
+                                <th>Status</th>
+                                <th>Message ID</th>
+                                <th>Time</th>
+                                <th>Error / Note</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyCampaignActivity">
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:28px; color:var(--text-muted);">
+                                    Select or start a campaign to inspect contact logs.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
+
+        <!-- Add / Edit WhatsApp Account Modal -->
+        <div class="modal-overlay" id="modalAccountOverlay">
+            <div class="modal-dialog">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--border-subtle); padding-bottom:12px;">
+                    <h3 style="font-size:17px; font-weight:700; color:var(--text-heading);" id="modalAccountTitle">Connect WhatsApp Business Number</h3>
+                    <button type="button" class="copy-btn" id="btnCloseAccountModal" style="border:none; font-size:18px; cursor:pointer;">✕</button>
+                </div>
+
+                <form id="formAccountEdit">
+                    <input type="hidden" id="modalAccId" value="" />
+                    
+                    <div class="form-group">
+                        <label class="form-label">Friendly Account Name <span style="color:var(--danger)">*</span></label>
+                        <input type="text" class="input-text" id="modalAccName" placeholder="e.g. Sales Team #1 or Support Helpline" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phone Number ID <span style="color:var(--danger)">*</span></label>
+                        <input type="text" class="input-text" id="modalAccPhoneId" placeholder="e.g. 102938475610293" required />
+                        <p class="form-hint">Obtained from Meta App &gt; WhatsApp &gt; API Setup &gt; Phone Number ID</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">WhatsApp Business Account ID (WABA ID)</label>
+                        <input type="text" class="input-text" id="modalAccWabaId" placeholder="e.g. 109876543210987" />
+                        <p class="form-hint">Used for template synchronization and account quality monitoring</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Display Phone Number (Optional)</label>
+                        <input type="text" class="input-text" id="modalAccPhone" placeholder="e.g. +1 555-0199" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">System User Access Token <span style="color:var(--danger)">*</span></label>
+                        <div class="input-with-action">
+                            <input type="password" class="input-text" id="modalAccToken" placeholder="Paste Meta System User Access Token" required />
+                            <button type="button" class="copy-btn" id="btnToggleModalToken">👁️</button>
+                        </div>
+                        <p class="form-hint">Saved securely in private SQLite backend. Never sent back unmasked to browser.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Meta Graph API Version</label>
+                        <select class="input-text" id="modalAccApiVersion" style="width:100%;">
+                            <option value="v22.0">v22.0 (Latest Official)</option>
+                            <option value="v21.0">v21.0</option>
+                            <option value="v20.0">v20.0</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px; border-top:1px solid var(--border-subtle); padding-top:16px;">
+                        <button type="button" class="btn btn-secondary" id="btnCancelAccountModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btnSaveAccountModal">
+                            <span>Save & Connect Number</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <!-- ============================================================== -->
         <!-- VIEW 3: INBOX & RECENT CHATS                                   -->
@@ -1613,6 +2820,39 @@
     <!-- Client Logic -->
     <script>
         // =====================================================================
+        // 0. THEME MANAGER (DARK / LIGHT MODE WITH PERSISTENCE)
+        // =====================================================================
+        const btnThemeToggle = document.getElementById('btnThemeToggle');
+        const themeToggleIcon = document.getElementById('themeToggleIcon');
+        const themeToggleText = document.getElementById('themeToggleText');
+
+        function initTheme() {
+            const saved = localStorage.getItem('fx_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            applyTheme(saved);
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('fx_theme', theme);
+            if (themeToggleIcon && themeToggleText) {
+                if (theme === 'dark') {
+                    themeToggleIcon.textContent = '☀️';
+                    themeToggleText.textContent = 'Light';
+                } else {
+                    themeToggleIcon.textContent = '🌙';
+                    themeToggleText.textContent = 'Dark';
+                }
+            }
+        }
+
+        btnThemeToggle?.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+            applyTheme(current === 'dark' ? 'light' : 'dark');
+        });
+
+        initTheme();
+
+        // =====================================================================
         // 1. WORLD COUNTRIES LIST (ALL NATIONS SUPPORTED)
         // =====================================================================
         const WORLD_COUNTRIES = [
@@ -1772,10 +3012,17 @@
                 }
             });
 
+            if (targetViewId === 'view-numbers') {
+                loadWhatsAppAccounts();
+            }
+            if (targetViewId === 'view-optouts') {
+                loadOptOuts();
+            }
             if (targetViewId === 'view-inbox') {
                 loadInboxChats();
             }
             if (targetViewId === 'view-send') {
+                loadWhatsAppAccounts();
                 checkActiveCampaign();
             }
             if (targetViewId === 'view-settings') {
@@ -1797,6 +3044,348 @@
                 switchView(target);
             });
         });
+
+        // =====================================================================
+        // 2.2 MULTIPLE WHATSAPP BUSINESS NUMBERS (MULTI-ACCOUNT)
+        // =====================================================================
+        let cachedAccounts = [];
+
+        async function loadWhatsAppAccounts() {
+            const grid = document.getElementById('gridWhatsAppAccounts');
+            try {
+                const res = await fetch('/api/whatsapp/accounts');
+                const data = await res.json();
+                if (!data || !data.success) throw new Error(data.error || 'Failed to load accounts');
+
+                cachedAccounts = data.accounts || [];
+                renderWhatsAppAccounts(cachedAccounts);
+                populateAccountSelects(cachedAccounts);
+            } catch (err) {
+                if (grid) {
+                    grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:24px; color:var(--danger);">Error loading accounts: ${escapeHtml(err.message)}</div>`;
+                }
+            }
+        }
+
+        function populateAccountSelects(accounts) {
+            const selectAcc = document.getElementById('selectCampaignAccount');
+            if (!selectAcc) return;
+            const currentVal = selectAcc.value;
+            selectAcc.innerHTML = '<option value="">-- Primary Active WhatsApp Account --</option>' +
+                accounts.map(acc => {
+                    const statusText = acc.status === 'ACTIVE' ? '🟢 Active' : '⚪ ' + acc.status;
+                    const phoneText = acc.phone_number ? ` (+${acc.phone_number})` : '';
+                    return `<option value="${acc.id}">${escapeHtml(acc.name)}${phoneText} [ID: ${acc.phone_number_id}] - ${statusText}</option>`;
+                }).join('');
+            if (currentVal) selectAcc.value = currentVal;
+        }
+
+        function renderWhatsAppAccounts(accounts) {
+            const grid = document.getElementById('gridWhatsAppAccounts');
+            if (!grid) return;
+
+            if (!accounts.length) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1; text-align:center; padding:40px; background:var(--bg-subtle); border-radius:var(--radius-lg); border:1.5px dashed var(--border-color);">
+                        <div style="font-size:32px; margin-bottom:12px;">📱</div>
+                        <h3 style="font-size:16px; font-weight:700; color:var(--text-heading); margin-bottom:6px;">No WhatsApp Business Numbers Connected</h3>
+                        <p style="font-size:13px; color:var(--text-muted); max-width:440px; margin:0 auto 16px auto;">Connect your official WhatsApp Business accounts using their Phone Number ID and Meta System User Token to send campaigns.</p>
+                        <button type="button" class="btn btn-primary" onclick="openAddAccountModal()">
+                            <span>➕ Connect Your First Number</span>
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = accounts.map(acc => {
+                const isActive = acc.status === 'ACTIVE';
+                const statusPill = isActive
+                    ? `<span style="font-size:11px; font-weight:800; padding:2px 10px; border-radius:var(--radius-full); background:var(--wa-light-green); color:var(--wa-dark-teal); border:1px solid rgba(37,211,102,0.3);">ACTIVE</span>`
+                    : `<span style="font-size:11px; font-weight:800; padding:2px 10px; border-radius:var(--radius-full); background:#fee2e2; color:#991b1b; border:1px solid #fecaca;">${escapeHtml(acc.status)}</span>`;
+
+                const qualityColors = {
+                    'GREEN': '#059669',
+                    'YELLOW': '#d97706',
+                    'RED': '#dc2626',
+                    'UNKNOWN': '#64748b'
+                };
+                const qColor = qualityColors[acc.quality_rating] || '#64748b';
+                const qualityBadge = `<span style="font-size:11px; font-weight:700; color:${qColor}; display:inline-flex; align-items:center; gap:5px;"><span style="width:7px; height:7px; border-radius:50%; background:${qColor};"></span> Quality: ${escapeHtml(acc.quality_rating || 'UNKNOWN')}</span>`;
+
+                const errorBox = acc.error_message
+                    ? `<div style="padding:8px 12px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; font-size:11.5px; color:#b91c1c; word-break:break-word; margin-top:8px;"><strong>Error:</strong> ${escapeHtml(acc.error_message)}</div>`
+                    : '';
+
+                return `
+                    <div class="account-card" id="accountCard-${acc.id}">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                                <div>
+                                    <h3 style="font-size:16px; font-weight:800; color:var(--text-heading);">${escapeHtml(acc.name)}</h3>
+                                    <div style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">
+                                        ${acc.phone_number ? '+' + escapeHtml(acc.phone_number) : 'ID: ' + escapeHtml(acc.phone_number_id)}
+                                    </div>
+                                </div>
+                                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                                    ${statusPill}
+                                    ${qualityBadge}
+                                </div>
+                            </div>
+
+                            <div style="background:var(--bg-subtle); padding:10px 12px; border-radius:var(--radius-md); font-size:12px; margin-bottom:12px; font-family:'JetBrains Mono',monospace;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                    <span style="color:var(--text-muted);">Phone ID:</span>
+                                    <span style="color:var(--text-heading); font-weight:600;">${escapeHtml(acc.phone_number_id)}</span>
+                                </div>
+                                ${acc.business_account_id ? `
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span style="color:var(--text-muted);">WABA ID:</span>
+                                    <span style="color:var(--text-heading); font-weight:600;">${escapeHtml(acc.business_account_id)}</span>
+                                </div>` : ''}
+                            </div>
+
+                            <!-- Sending Statistics -->
+                            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; text-align:center; margin-bottom:12px;">
+                                <div style="background:var(--bg-subtle); padding:8px 6px; border-radius:8px;">
+                                    <div style="font-size:15px; font-weight:800; color:#059669;">${acc.total_sent || 0}</div>
+                                    <div style="font-size:11px; font-weight:600; color:var(--text-muted);">Sent</div>
+                                </div>
+                                <div style="background:var(--bg-subtle); padding:8px 6px; border-radius:8px;">
+                                    <div style="font-size:15px; font-weight:800; color:#0284c7;">${acc.total_delivered || 0}</div>
+                                    <div style="font-size:11px; font-weight:600; color:var(--text-muted);">Delivered</div>
+                                </div>
+                                <div style="background:var(--bg-subtle); padding:8px 6px; border-radius:8px;">
+                                    <div style="font-size:15px; font-weight:800; color:var(--danger);">${acc.total_failed || 0}</div>
+                                    <div style="font-size:11px; font-weight:600; color:var(--text-muted);">Failed</div>
+                                </div>
+                            </div>
+
+                            ${errorBox}
+                        </div>
+
+                        <!-- Card Action Buttons -->
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; border-top:1px solid var(--border-subtle); padding-top:12px;">
+                            <button type="button" class="btn btn-secondary" onclick="testAccountConnection(${acc.id})" style="padding:6px 12px; font-size:12px;" title="Test Meta API credentials">
+                                <span>⚡ Test</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="toggleAccountStatus(${acc.id})" style="padding:6px 12px; font-size:12px;">
+                                <span>${isActive ? '⏸️ Disable' : '▶️ Enable'}</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="openEditAccountModal(${acc.id})" style="padding:6px 12px; font-size:12px;">
+                                <span>✏️ Edit</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="deleteAccount(${acc.id})" style="padding:6px 10px; font-size:12px; color:var(--danger); border-color:var(--danger);" title="Remove number">
+                                <span>🗑️</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Account Modal Handlers
+        const modalAccountOverlay = document.getElementById('modalAccountOverlay');
+        const formAccountEdit = document.getElementById('formAccountEdit');
+        const modalAccId = document.getElementById('modalAccId');
+        const modalAccName = document.getElementById('modalAccName');
+        const modalAccPhoneId = document.getElementById('modalAccPhoneId');
+        const modalAccWabaId = document.getElementById('modalAccWabaId');
+        const modalAccPhone = document.getElementById('modalAccPhone');
+        const modalAccToken = document.getElementById('modalAccToken');
+        const modalAccApiVersion = document.getElementById('modalAccApiVersion');
+        const modalAccountTitle = document.getElementById('modalAccountTitle');
+        const btnToggleModalToken = document.getElementById('btnToggleModalToken');
+
+        btnToggleModalToken?.addEventListener('click', () => {
+            if (modalAccToken.type === 'password') {
+                modalAccToken.type = 'text';
+                btnToggleModalToken.textContent = '🔒';
+            } else {
+                modalAccToken.type = 'password';
+                btnToggleModalToken.textContent = '👁️';
+            }
+        });
+
+        function openAddAccountModal() {
+            if (!formAccountEdit) return;
+            formAccountEdit.reset();
+            modalAccId.value = '';
+            modalAccountTitle.textContent = 'Connect WhatsApp Business Number';
+            modalAccToken.required = true;
+            modalAccountOverlay.classList.add('active');
+        }
+
+        function openEditAccountModal(id) {
+            const acc = cachedAccounts.find(a => a.id === id);
+            if (!acc) return;
+            modalAccId.value = acc.id;
+            modalAccName.value = acc.name || '';
+            modalAccPhoneId.value = acc.phone_number_id || '';
+            modalAccWabaId.value = acc.business_account_id || '';
+            modalAccPhone.value = acc.phone_number || '';
+            modalAccToken.value = '';
+            modalAccToken.required = false;
+            modalAccToken.placeholder = 'Leave blank to keep existing encrypted token';
+            if (acc.api_version) modalAccApiVersion.value = acc.api_version;
+            modalAccountTitle.textContent = `Edit Account: ${acc.name}`;
+            modalAccountOverlay.classList.add('active');
+        }
+
+        function closeAccountModal() {
+            modalAccountOverlay.classList.remove('active');
+        }
+
+        document.getElementById('btnOpenAddAccountModal')?.addEventListener('click', openAddAccountModal);
+        document.getElementById('btnCloseAccountModal')?.addEventListener('click', closeAccountModal);
+        document.getElementById('btnCancelAccountModal')?.addEventListener('click', closeAccountModal);
+        document.getElementById('btnRefreshAccounts')?.addEventListener('click', loadWhatsAppAccounts);
+
+        formAccountEdit?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = modalAccId.value;
+            const payload = {
+                name: modalAccName.value.trim(),
+                phone_number_id: modalAccPhoneId.value.trim(),
+                business_account_id: modalAccWabaId.value.trim(),
+                phone_number: modalAccPhone.value.trim(),
+                api_version: modalAccApiVersion.value.trim()
+            };
+            if (modalAccToken.value.trim()) {
+                payload.access_token = modalAccToken.value.trim();
+            }
+
+            const url = id ? `/api/whatsapp/accounts/${id}` : '/api/whatsapp/accounts';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to save account');
+
+                closeAccountModal();
+                loadWhatsAppAccounts();
+            } catch (err) {
+                alert('Account Save Error: ' + err.message);
+            }
+        });
+
+        async function testAccountConnection(id) {
+            try {
+                const res = await fetch(`/api/whatsapp/accounts/${id}/test`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`✅ WhatsApp Business Number Connected Successfully!\n\nPhone: +${data.phone}\nDisplay Name: ${data.verifiedName || 'Verified'}\nQuality: ${data.qualityRating || 'GREEN'}\nCode Verification: ${data.codeVerificationStatus || 'VERIFIED'}`);
+                    loadWhatsAppAccounts();
+                } else {
+                    alert(`❌ WhatsApp API Connection Error:\n\n${data.error}\nType: ${data.errorCategory || 'Error'}`);
+                }
+            } catch (err) {
+                alert('Test connection error: ' + err.message);
+            }
+        }
+
+        async function toggleAccountStatus(id) {
+            try {
+                const res = await fetch(`/api/whatsapp/accounts/${id}/toggle`, { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to toggle account');
+                loadWhatsAppAccounts();
+            } catch (err) {
+                alert('Toggle error: ' + err.message);
+            }
+        }
+
+        async function deleteAccount(id) {
+            if (!confirm('Are you sure you want to remove this WhatsApp Business number configuration?')) return;
+            try {
+                const res = await fetch(`/api/whatsapp/accounts/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to delete account');
+                loadWhatsAppAccounts();
+            } catch (err) {
+                alert('Delete error: ' + err.message);
+            }
+        }
+
+        // =====================================================================
+        // 2.3 DO-NOT-CONTACT / OPT-OUTS (DNC) COMPLIANCE
+        // =====================================================================
+        async function loadOptOuts() {
+            const tbody = document.getElementById('tbodyOptOuts');
+            if (!tbody) return;
+            try {
+                const res = await fetch('/api/optouts');
+                const data = await res.json();
+                if (!data || !data.success) throw new Error(data.error || 'Failed to load opt-outs');
+
+                const list = data.optouts || [];
+                if (!list.length) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--text-muted);">No contacts in opt-out list. Contacts who reply STOP are added automatically.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = list.map(item => `
+                    <tr>
+                        <td style="font-weight:700; color:var(--text-heading); font-family:'JetBrains Mono',monospace;">+${escapeHtml(item.phone)}</td>
+                        <td style="color:var(--text-body);">${escapeHtml(item.reason || 'User opted out')}</td>
+                        <td style="color:var(--text-muted); font-size:12px;">${new Date(item.opted_out_at).toLocaleString()}</td>
+                        <td style="text-align:right;">
+                            <button type="button" class="btn btn-secondary" onclick="removeOptOut('${escapeHtml(item.phone)}')" style="padding:4px 10px; font-size:11.5px; color:var(--danger); border-color:var(--danger);">
+                                <span>Remove</span>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--danger);">Error: ${escapeHtml(err.message)}</td></tr>`;
+            }
+        }
+
+        document.getElementById('btnAddOptOut')?.addEventListener('click', async () => {
+            const phoneInput = document.getElementById('inputOptOutPhone');
+            const reasonInput = document.getElementById('inputOptOutReason');
+            const phone = (phoneInput?.value || '').trim();
+            const reason = (reasonInput?.value || '').trim() || 'Manual entry';
+
+            if (!phone) {
+                alert('Please enter a phone number with country code');
+                phoneInput?.focus();
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/optouts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, reason })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to add opt-out');
+
+                phoneInput.value = '';
+                reasonInput.value = '';
+                loadOptOuts();
+            } catch (err) {
+                alert('Opt-Out Error: ' + err.message);
+            }
+        });
+
+        async function removeOptOut(phone) {
+            if (!confirm(`Allow messages to be sent to +${phone} again?`)) return;
+            try {
+                const res = await fetch(`/api/optouts/${encodeURIComponent(phone)}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to remove opt-out');
+                loadOptOuts();
+            } catch (err) {
+                alert('Remove Error: ' + err.message);
+            }
+        }
 
         document.getElementById('headerStatusBadge')?.addEventListener('click', () => {
             switchView('view-connect');
@@ -2180,8 +3769,9 @@
         }
 
         // =====================================================================
-        // 8. VIEW 2: CAMPAIGN COMPOSER & DISPATCHER WITH CUSTOM SECONDS DELAY
+        // 8. VIEW 2: CAMPAIGN COMPOSER, QUEUE & ACTIVITY LOGS
         // =====================================================================
+        const inputCampaignName = document.getElementById('inputCampaignName');
         const inputRecipients = document.getElementById('inputRecipients');
         const badgeRecipientCount = document.getElementById('badgeRecipientCount');
         const inputMessageText = document.getElementById('inputMessageText');
@@ -2197,6 +3787,67 @@
         const inputDelaySeconds = document.getElementById('inputDelaySeconds');
         const previewDelayText = document.getElementById('previewDelayText');
         const delayChips = document.querySelectorAll('.delay-chip');
+
+        const inputBatchSize = document.getElementById('inputBatchSize');
+        const inputBatchPause = document.getElementById('inputBatchPause');
+        const inputMaxCampaignSize = document.getElementById('inputMaxCampaignSize');
+        const checkStopOnError = document.getElementById('checkStopOnError');
+        const inputScheduleTime = document.getElementById('inputScheduleTime');
+
+        const selectCampaignAccount = document.getElementById('selectCampaignAccount');
+        const boxCampaignAccountSelect = document.getElementById('boxCampaignAccountSelect');
+        const boxCloudTemplateSelect = document.getElementById('boxCloudTemplateSelect');
+        const selectMetaTemplate = document.getElementById('selectMetaTemplate');
+        const boxTemplatePreviewCard = document.getElementById('boxTemplatePreviewCard');
+        const tplPreviewName = document.getElementById('tplPreviewName');
+        const tplPreviewLangBadge = document.getElementById('tplPreviewLangBadge');
+        const tplPreviewBody = document.getElementById('tplPreviewBody');
+        const boxTemplateParamsInputs = document.getElementById('boxTemplateParamsInputs');
+        const containerTemplateParams = document.getElementById('containerTemplateParams');
+
+        const checkEnablePersonalization = document.getElementById('checkEnablePersonalization');
+        const boxPersonalizationPreview = document.getElementById('boxPersonalizationPreview');
+        const textPersonalizationPreview = document.getElementById('textPersonalizationPreview');
+        const variableChips = document.querySelectorAll('.variable-chip');
+
+        // Personalization variable tag insertion
+        variableChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const tag = chip.getAttribute('data-var');
+                if (!inputMessageText) return;
+                const start = inputMessageText.selectionStart || inputMessageText.value.length;
+                const end = inputMessageText.selectionEnd || inputMessageText.value.length;
+                const text = inputMessageText.value;
+                inputMessageText.value = text.substring(0, start) + tag + text.substring(end);
+                inputMessageText.selectionStart = inputMessageText.selectionEnd = start + tag.length;
+                inputMessageText.focus();
+                updatePersonalizationPreview();
+            });
+        });
+
+        function updatePersonalizationPreview() {
+            if (!boxPersonalizationPreview || !textPersonalizationPreview) return;
+            const raw = inputMessageText?.value || '';
+            if (raw.includes('{name}') || raw.includes('{phone}') || raw.includes('{company}') || raw.includes('{custom_field}')) {
+                boxPersonalizationPreview.style.display = 'block';
+                let rendered = raw
+                    .replace(/\{name\}/g, 'Alex Morgan')
+                    .replace(/\{phone\}/g, '+1 (555) 019-2834')
+                    .replace(/\{company\}/g, 'Acme Corp')
+                    .replace(/\{custom_field\}/g, 'VIP-Gold');
+                textPersonalizationPreview.textContent = rendered;
+            } else {
+                boxPersonalizationPreview.style.display = 'none';
+            }
+        }
+
+        inputMessageText?.addEventListener('input', () => {
+            const len = (inputMessageText.value || '').length;
+            if (badgeCharCount) {
+                badgeCharCount.textContent = `${len} character${len === 1 ? '' : 's'}`;
+            }
+            updatePersonalizationPreview();
+        });
 
         // Delay presets chips handling
         delayChips.forEach(chip => {
@@ -2216,8 +3867,6 @@
                 let v = parseInt(e.target.value, 10);
                 if (isNaN(v) || v < 1) v = 1;
                 if (v > 120) v = 120;
-                
-                // Match chip if exists
                 delayChips.forEach(c => {
                     if (c.getAttribute('data-sec') === String(v)) {
                         c.classList.add('active');
@@ -2225,7 +3874,6 @@
                         c.classList.remove('active');
                     }
                 });
-
                 updateDelayPreview(v);
             });
         }
@@ -2235,6 +3883,94 @@
                 previewDelayText.textContent = `${seconds} second${seconds == 1 ? '' : 's'}`;
             }
         }
+
+        // Toggle provider mode UI in composer
+        function updateComposerProviderView() {
+            const chosen = document.querySelector('input[name="campaignProvider"]:checked')?.value || 'web_qr';
+            if (boxCampaignAccountSelect) {
+                boxCampaignAccountSelect.style.display = chosen === 'cloud_api' ? 'block' : 'none';
+            }
+            if (boxCloudTemplateSelect) {
+                boxCloudTemplateSelect.style.display = chosen === 'cloud_api' ? 'block' : 'none';
+            }
+            const notice = document.getElementById('badgeActiveProviderNotice');
+            if (notice) {
+                notice.textContent = chosen === 'cloud_api' ? 'Active: Cloud API (Official)' : 'Active: Web / QR';
+            }
+        }
+
+        document.querySelectorAll('input[name="campaignProvider"]').forEach(radio => {
+            radio.addEventListener('change', updateComposerProviderView);
+        });
+
+        // Template Selection & Dynamic Parameters Rendering
+        let cachedMetaTemplates = [];
+
+        async function fetchMetaTemplatesList(forceRefresh = false) {
+            const accId = selectCampaignAccount?.value;
+            const url = accId 
+                ? `/api/whatsapp/accounts/${accId}/templates${forceRefresh ? '?refresh=true' : ''}`
+                : `/api/whatsapp/cloud/templates${forceRefresh ? '?refresh=true' : ''}`;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.success && data.templates) {
+                    cachedMetaTemplates = data.templates;
+                    populateTemplateDropdown(cachedMetaTemplates);
+                }
+            } catch (err) {
+                console.warn('Failed to fetch templates:', err);
+            }
+        }
+
+        function populateTemplateDropdown(templates) {
+            if (!selectMetaTemplate) return;
+            selectMetaTemplate.innerHTML = '<option value="">-- Custom Text Message (Standard) --</option>' +
+                templates.map(t => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)} (${escapeHtml(t.language || 'en')}) - ${t.status || 'APPROVED'}</option>`).join('');
+        }
+
+        selectCampaignAccount?.addEventListener('change', () => {
+            fetchMetaTemplatesList();
+        });
+
+        document.getElementById('btnRefreshMetaTemplates')?.addEventListener('click', () => {
+            fetchMetaTemplatesList(true);
+        });
+
+        selectMetaTemplate?.addEventListener('change', () => {
+            const tplName = selectMetaTemplate.value;
+            if (!tplName) {
+                if (boxTemplatePreviewCard) boxTemplatePreviewCard.style.display = 'none';
+                return;
+            }
+
+            const tpl = cachedMetaTemplates.find(t => t.name === tplName);
+            if (!tpl) return;
+
+            if (boxTemplatePreviewCard) boxTemplatePreviewCard.style.display = 'block';
+            if (tplPreviewName) tplPreviewName.textContent = tpl.name;
+            if (tplPreviewLangBadge) tplPreviewLangBadge.textContent = tpl.language || 'en';
+
+            const bodyComp = (tpl.components || []).find(c => c.type === 'BODY');
+            const bodyText = bodyComp ? bodyComp.text : '[Template body]';
+            if (tplPreviewBody) tplPreviewBody.textContent = bodyText;
+
+            // Extract required parameters: {{1}}, {{2}}, etc.
+            const matches = bodyText.match(/\{\{(\d+)\}\}/g) || [];
+            const paramIndexes = [...new Set(matches.map(m => m.replace(/[\{\}]/g, '')))];
+
+            if (paramIndexes.length > 0 && containerTemplateParams && boxTemplateParamsInputs) {
+                boxTemplateParamsInputs.style.display = 'block';
+                containerTemplateParams.innerHTML = paramIndexes.map(idx => `
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:700; font-size:12px; font-family:'JetBrains Mono',monospace; width:50px; color:var(--wa-dark-teal);">{{${idx}}}:</span>
+                        <input type="text" class="input-text tpl-param-input" data-param-idx="${idx}" placeholder="Value or variable (e.g. {name}, Order #123)" style="padding:7px 10px; font-size:13px;" required />
+                    </div>
+                `).join('');
+            } else if (boxTemplateParamsInputs) {
+                boxTemplateParamsInputs.style.display = 'none';
+            }
+        });
 
         let attachmentBase64 = null;
 
@@ -2249,13 +3985,6 @@
             const nums = parseRecipientNumbers();
             if (badgeRecipientCount) {
                 badgeRecipientCount.textContent = `${nums.length} recipient${nums.length === 1 ? '' : 's'}`;
-            }
-        });
-
-        inputMessageText?.addEventListener('input', () => {
-            const len = (inputMessageText.value || '').length;
-            if (badgeCharCount) {
-                badgeCharCount.textContent = `${len} character${len === 1 ? '' : 's'}`;
             }
         });
 
@@ -2279,6 +4008,7 @@
             if (imagePreviewCard) imagePreviewCard.style.display = 'none';
         });
 
+        // Start Campaign Button
         btnStartCampaign?.addEventListener('click', async () => {
             const recipients = parseRecipientNumbers();
             const message = (inputMessageText?.value || '').trim();
@@ -2298,24 +4028,53 @@
                 return;
             }
 
+            // Gather and validate template parameters if selected
+            let templateParamsMapping = null;
+            if (templateName) {
+                const paramInputs = document.querySelectorAll('.tpl-param-input');
+                if (paramInputs.length > 0) {
+                    templateParamsMapping = {};
+                    for (const inp of paramInputs) {
+                        const idx = inp.getAttribute('data-param-idx');
+                        const val = inp.value.trim();
+                        if (!val) {
+                            showSendError(`Template parameter {{${idx}}} is required. Please provide a value or variable.`);
+                            inp.focus();
+                            return;
+                        }
+                        templateParamsMapping[idx] = val;
+                    }
+                }
+            }
+
             hideSendError();
             btnStartCampaign.disabled = true;
             btnStartCampaign.innerHTML = '<span class="spinner" style="width:16px; height:16px;"></span> Starting Campaign...';
+
+            const payload = {
+                name: (inputCampaignName?.value || '').trim() || `Campaign ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}`,
+                message,
+                recipients,
+                attachment: attachmentBase64 || '',
+                delaySeconds: delaySec,
+                provider: chosenProvider,
+                templateName: templateName,
+                whatsappAccountId: (chosenProvider === 'cloud_api' && selectCampaignAccount?.value) ? parseInt(selectCampaignAccount.value, 10) : null,
+                batchSize: parseInt(inputBatchSize?.value, 10) || 20,
+                batchPauseMinutes: parseInt(inputBatchPause?.value, 10) || 10,
+                enablePersonalization: checkEnablePersonalization?.checked ? 1 : 0,
+                maxCampaignSize: parseInt(inputMaxCampaignSize?.value, 10) || 0,
+                stopOnError: checkStopOnError?.checked ? 1 : 0,
+                scheduledAt: inputScheduleTime?.value ? new Date(inputScheduleTime.value).toISOString() : null,
+                templateParamsMapping,
+                autoStart: true
+            };
 
             try {
                 const res = await fetch('/api/campaigns', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: `Dispatch ${new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}`,
-                        message,
-                        recipients,
-                        attachment: attachmentBase64 || '',
-                        delaySeconds: delaySec,
-                        provider: chosenProvider,
-                        templateName: templateName,
-                        autoStart: true
-                    })
+                    body: JSON.stringify(payload)
                 });
                 const data = await res.json();
 
@@ -2344,18 +4103,109 @@
 
         let currentTrackingCampaignId = null;
         let campaignProgressTimer = null;
+        let currentActivityFilter = 'ALL';
 
         function escapeHtml(text) {
             if (!text) return '';
             return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
 
+        // Emergency Stop All Campaigns
+        document.getElementById('btnEmergencyStop')?.addEventListener('click', async () => {
+            if (!confirm('⚠️ TRIGGER EMERGENCY STOP ALL?\n\nThis will immediately halt all running and paused campaigns across all connected WhatsApp numbers.')) return;
+            const btn = document.getElementById('btnEmergencyStop');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Halting...';
+            try {
+                const res = await fetch('/api/campaigns/emergency-stop', { method: 'POST' });
+                const data = await res.json();
+                alert(data.message || 'All campaigns stopped successfully.');
+                if (currentTrackingCampaignId) {
+                    trackCampaignProgress(currentTrackingCampaignId);
+                }
+            } catch (err) {
+                alert('Emergency stop error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🚨 Emergency Stop All</span>';
+            }
+        });
+
+        // Filter tabs click handling for Campaign Activity Logs
+        document.querySelectorAll('#filterTabsCampaignLogs .filter-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#filterTabsCampaignLogs .filter-tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentActivityFilter = btn.getAttribute('data-filter');
+                if (currentTrackingCampaignId) {
+                    loadCampaignContactsTable(currentTrackingCampaignId, currentActivityFilter);
+                }
+            });
+        });
+
+        async function loadCampaignContactsTable(campaignId, statusFilter = 'ALL') {
+            const tbody = document.getElementById('tbodyCampaignActivity');
+            if (!tbody) return;
+
+            const url = `/api/campaigns/${campaignId}/contacts?limit=100${statusFilter !== 'ALL' ? `&status=${statusFilter}` : ''}`;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (!data || !data.success) return;
+
+                const contacts = data.contacts || [];
+                if (!contacts.length) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">No contacts matching "${statusFilter}" filter.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = contacts.map(c => {
+                    const statusColors = {
+                        'PENDING': { bg: 'var(--bg-subtle)', color: 'var(--text-muted)', border: 'var(--border-color)' },
+                        'PROCESSING': { bg: '#e0f2fe', color: '#0369a1', border: '#bae6fd' },
+                        'SENT': { bg: '#ecfdf5', color: '#059669', border: '#a7f3d0' },
+                        'DELIVERED': { bg: '#f0f9ff', color: '#0284c7', border: '#bae6fd' },
+                        'FAILED': { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
+                        'SKIPPED': { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
+                        'OPTED_OUT': { bg: '#fee2e2', color: '#991b1b', border: '#fecaca' }
+                    };
+                    const sc = statusColors[c.status] || statusColors['PENDING'];
+                    const statusBadge = `<span style="font-weight:800; font-size:11px; padding:2px 8px; border-radius:var(--radius-full); background:${sc.bg}; color:${sc.color}; border:1px solid ${sc.border};">${c.status}</span>`;
+
+                    const timeStr = c.sent_at || c.processed_at || c.created_at;
+                    const formattedTime = timeStr ? new Date(timeStr).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' }) : '-';
+                    const msgIdStr = c.message_id ? `<span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--text-muted);">${escapeHtml(c.message_id.length > 18 ? c.message_id.substring(0, 16) + '...' : c.message_id)}</span>` : '-';
+
+                    return `
+                        <tr>
+                            <td style="font-weight:700; color:var(--text-heading);">${escapeHtml(c.name || 'Unknown')}</td>
+                            <td style="font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--text-heading);">+${escapeHtml(c.phone)}</td>
+                            <td>${statusBadge}</td>
+                            <td>${msgIdStr}</td>
+                            <td style="color:var(--text-muted); font-size:12px;">${formattedTime}</td>
+                            <td style="color:${c.error ? 'var(--danger)' : 'var(--text-muted)'}; font-size:12px; max-width:260px; word-break:break-word;">${escapeHtml(c.error || '-')}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.warn('Error loading contacts table:', err);
+            }
+        }
+
+        document.getElementById('btnRefreshActivityLogs')?.addEventListener('click', () => {
+            if (currentTrackingCampaignId) {
+                loadCampaignContactsTable(currentTrackingCampaignId, currentActivityFilter);
+            }
+        });
+
         function trackCampaignProgress(campaignId, delaySec = 3) {
             currentTrackingCampaignId = campaignId;
             if (campaignProgressTimer) clearInterval(campaignProgressTimer);
 
+            // Right column elements
             const statTotal = document.getElementById('statTotal');
             const statSent = document.getElementById('statSent');
+            const statDelivered = document.getElementById('statDelivered');
             const statFailed = document.getElementById('statFailed');
             const statRemaining = document.getElementById('statRemaining');
             const progressBarFill = document.getElementById('progressBarFill');
@@ -2367,166 +4217,218 @@
             const btnResumeCampaign = document.getElementById('btnResumeCampaign');
             const btnCancelCampaign = document.getElementById('btnCancelCampaign');
 
+            // Top Overview Card elements
+            const overviewCampaignName = document.getElementById('overviewCampaignName');
+            const overviewStatusBadge = document.getElementById('overviewStatusBadge');
+            const overviewConnectedNumber = document.getElementById('overviewConnectedNumber');
+            const overviewProgressText = document.getElementById('overviewProgressText');
+            const overviewProgressPercent = document.getElementById('overviewProgressPercent');
+            const overviewBatchProgress = document.getElementById('overviewBatchProgress');
+            const overviewNextAction = document.getElementById('overviewNextAction');
+            const overviewNextActionSub = document.getElementById('overviewNextActionSub');
+            const overviewSentCount = document.getElementById('overviewSentCount');
+            const overviewDeliveredCount = document.getElementById('overviewDeliveredCount');
+            const overviewFailedCount = document.getElementById('overviewFailedCount');
+            const overviewSkippedCount = document.getElementById('overviewSkippedCount');
+            const overviewLastApiResponse = document.getElementById('overviewLastApiResponse');
+            const overviewProgressBarFill = document.getElementById('overviewProgressBarFill');
+            const btnOverviewPause = document.getElementById('btnOverviewPause');
+            const btnOverviewResume = document.getElementById('btnOverviewResume');
+            const btnOverviewCancel = document.getElementById('btnOverviewCancel');
+
             async function updateProgress() {
                 try {
                     const res = await fetch(`/api/campaigns/${campaignId}/logs`);
                     const data = await res.json();
-
                     if (!data || !data.success) return;
 
-                    const m = data.metrics || data.counts || {};
-                    const total = m.total || 0;
-                    const sent = m.sent || 0;
-                    const failed = m.failed || 0;
-                    const pending = m.pending || 0;
-                    const processing = m.processing || 0;
-                    const remaining = pending + processing;
-                    const campStatus = data.campaign?.status || (remaining === 0 && total > 0 ? 'COMPLETED' : 'RUNNING');
+                    const c = data.campaign || {};
+                    const o = data.overview || {};
+                    const stats = o.stats || data.metrics || data.counts || {};
 
-                    // 1. Update Numbers
+                    const total = stats.total || 0;
+                    const sent = stats.sent || 0;
+                    const delivered = stats.delivered || 0;
+                    const failed = stats.failed || 0;
+                    const skipped = stats.skipped || 0;
+                    const pending = stats.pending || 0;
+                    const processing = stats.processing || 0;
+                    const remaining = pending + processing;
+                    const campStatus = c.status || (remaining === 0 && total > 0 ? 'COMPLETED' : 'RUNNING');
+
+                    // 1. Right Column Stats
                     if (statTotal) statTotal.textContent = total;
                     if (statSent) statSent.textContent = sent;
-                    if (statDelivered) statDelivered.textContent = m.delivered || 0;
+                    if (statDelivered) statDelivered.textContent = delivered;
                     if (statFailed) statFailed.textContent = failed;
                     if (statRemaining) statRemaining.textContent = remaining;
 
-                    // 2. Progress Bar
-                    const percent = total > 0 ? Math.min(100, Math.round(((sent + failed) / total) * 100)) : 0;
+                    // Progress %
+                    const percent = total > 0 ? Math.min(100, Math.round(((sent + failed + skipped) / total) * 100)) : 0;
                     if (progressBarFill) progressBarFill.style.width = `${percent}%`;
+                    if (overviewProgressBarFill) overviewProgressBarFill.style.width = `${percent}%`;
 
-                    // 3. Campaign Title
-                    if (data.campaign?.name && campaignNameDisplay) {
-                        campaignNameDisplay.textContent = data.campaign.name;
+                    // 2. Top Overview Card Updates
+                    if (overviewCampaignName) overviewCampaignName.textContent = c.name || `Campaign #${campaignId}`;
+                    if (overviewProgressText) overviewProgressText.textContent = `${sent + failed + skipped} / ${total}`;
+                    if (overviewProgressPercent) overviewProgressPercent.textContent = `${percent}% completed (${remaining} remaining)`;
+                    
+                    const batchSize = c.batch_size || 20;
+                    const batchCounter = c.batch_counter || 0;
+                    if (overviewBatchProgress) overviewBatchProgress.textContent = `${batchCounter} / ${batchSize}`;
+                    
+                    if (overviewSentCount) overviewSentCount.textContent = sent;
+                    if (overviewDeliveredCount) overviewDeliveredCount.textContent = delivered;
+                    if (overviewFailedCount) overviewFailedCount.textContent = failed;
+                    if (overviewSkippedCount) overviewSkippedCount.textContent = skipped;
+
+                    if (overviewConnectedNumber) {
+                        overviewConnectedNumber.textContent = o.account 
+                            ? `${o.account.name} (+${o.account.phone_number || o.account.phone_number_id})` 
+                            : (c.provider === 'cloud_api' ? 'Meta Cloud API Default' : 'WhatsApp Web / QR');
                     }
 
-                    // 4. Status Badge Color and Text
-                    if (badgeCampaignState) {
-                        badgeCampaignState.style.display = 'inline-block';
-                        badgeCampaignState.textContent = campStatus;
+                    // Next scheduled action description
+                    if (overviewNextAction) {
                         if (campStatus === 'RUNNING') {
-                            badgeCampaignState.style.background = '#d1fae5';
-                            badgeCampaignState.style.color = '#065f46';
-                            badgeCampaignState.style.border = '1px solid #a7f3d0';
+                            overviewNextAction.textContent = `Sequential sending (${c.delay_seconds || delaySec}s interval)`;
+                            overviewNextActionSub.textContent = `Processing next contact in queue...`;
+                        } else if (campStatus === 'BATCH_PAUSED') {
+                            overviewNextAction.textContent = c.next_action_info || `Batch paused for cooldown`;
+                            overviewNextActionSub.textContent = `Will resume automatically after pause`;
                         } else if (campStatus === 'PAUSED') {
-                            badgeCampaignState.style.background = '#fef3c7';
-                            badgeCampaignState.style.color = '#92400e';
-                            badgeCampaignState.style.border = '1px solid #fde68a';
-                        } else if (campStatus === 'CANCELLED') {
-                            badgeCampaignState.style.background = '#fee2e2';
-                            badgeCampaignState.style.color = '#991b1b';
-                            badgeCampaignState.style.border = '1px solid #fecaca';
+                            overviewNextAction.textContent = `Queue paused manually`;
+                            overviewNextActionSub.textContent = `Click Resume to continue sending`;
+                        } else if (campStatus === 'STOPPED_POLICY_ERROR') {
+                            overviewNextAction.textContent = `Stopped on WhatsApp Policy / Quality Error`;
+                            overviewNextActionSub.textContent = c.error_summary || `Check number health in WhatsApp Numbers`;
                         } else if (campStatus === 'COMPLETED') {
-                            badgeCampaignState.style.background = '#ecfdf5';
-                            badgeCampaignState.style.color = '#047857';
-                            badgeCampaignState.style.border = '1px solid #6ee7b7';
+                            overviewNextAction.textContent = `Campaign finished successfully`;
+                            overviewNextActionSub.textContent = `All contacts processed`;
+                        } else if (campStatus === 'CANCELLED') {
+                            overviewNextAction.textContent = `Campaign cancelled`;
+                            overviewNextActionSub.textContent = `Pending jobs cleared`;
+                        } else {
+                            overviewNextAction.textContent = `Idle`;
+                            overviewNextActionSub.textContent = `Ready`;
                         }
                     }
 
-                    // 5. Button and Label States
-                    if (campStatus === 'RUNNING') {
-                        if (btnStopCampaign) btnStopCampaign.style.display = 'inline-flex';
-                        if (btnResumeCampaign) btnResumeCampaign.style.display = 'none';
-                        if (btnCancelCampaign) btnCancelCampaign.style.display = 'inline-flex';
-                        if (btnStartCampaign) {
-                            btnStartCampaign.disabled = true;
-                            btnStartCampaign.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Dispatching messages...';
-                        }
-                        if (textProgressStatus) {
-                            textProgressStatus.textContent = `Dispatching: ${sent} sent, ${m.delivered || 0} delivered, ${failed} failed of ${total} (${delaySec}s delay between each)`;
-                        }
-                    } else if (campStatus === 'PAUSED') {
-                        if (btnStopCampaign) btnStopCampaign.style.display = 'none';
-                        if (btnResumeCampaign) btnResumeCampaign.style.display = 'inline-flex';
-                        if (btnCancelCampaign) btnCancelCampaign.style.display = 'inline-flex';
-                        if (btnStartCampaign) {
-                            btnStartCampaign.disabled = true;
-                            btnStartCampaign.innerHTML = '<span>⏸️ Campaign Paused</span>';
-                        }
-                        if (textProgressStatus) {
-                            textProgressStatus.textContent = `Campaign paused at ${sent} sent. Click Resume to continue dispatching.`;
-                        }
-                    } else if (campStatus === 'COMPLETED') {
-                        if (campaignProgressTimer) clearInterval(campaignProgressTimer);
-                        if (btnStopCampaign) btnStopCampaign.style.display = 'none';
-                        if (btnResumeCampaign) btnResumeCampaign.style.display = 'none';
-                        if (btnCancelCampaign) btnCancelCampaign.style.display = 'none';
-                        if (btnStartCampaign) {
-                            btnStartCampaign.disabled = false;
-                            btnStartCampaign.innerHTML = '<span>🚀 Send Message Campaign</span>';
-                        }
-                        if (textProgressStatus) {
-                            textProgressStatus.textContent = `Completed! ${sent} message(s) sent, ${m.delivered || 0} delivered${failed > 0 ? `, ${failed} failed` : ''}.`;
-                        }
-                    } else if (campStatus === 'CANCELLED') {
-                        if (campaignProgressTimer) clearInterval(campaignProgressTimer);
-                        if (btnStopCampaign) btnStopCampaign.style.display = 'none';
-                        if (btnResumeCampaign) btnResumeCampaign.style.display = 'none';
-                        if (btnCancelCampaign) btnCancelCampaign.style.display = 'none';
-                        if (btnStartCampaign) {
-                            btnStartCampaign.disabled = false;
-                            btnStartCampaign.innerHTML = '<span>🚀 Send Message Campaign</span>';
-                        }
-                        if (textProgressStatus) {
-                            textProgressStatus.textContent = `Campaign stopped & cancelled. Sent ${sent} message(s).`;
+                    if (overviewLastApiResponse) {
+                        if (c.error_summary) {
+                            overviewLastApiResponse.innerHTML = `<span style="color:var(--danger)">Error: ${escapeHtml(c.error_summary)}</span>`;
+                        } else {
+                            overviewLastApiResponse.textContent = `Last API: HTTP 200 OK (Meta)`;
                         }
                     }
 
-                    // 6. Real-time Logs Feed (Enhanced with Webhook Delivery Receipts & Meta Message IDs)
-                    if (boxLiveLogs) {
-                        if (data.logs && data.logs.length) {
-                            boxLiveLogs.innerHTML = data.logs.map(l => {
-                                let badgeText = '✓ SENT';
-                                let color = '#059669';
-                                let bg = '#ecfdf5';
-                                let border = '#a7f3d0';
+                    // Status Badge Styling
+                    const statusBadgeColors = {
+                        'RUNNING': { bg: '#d1fae5', color: '#065f46', border: '#a7f3d0' },
+                        'BATCH_PAUSED': { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
+                        'PAUSED': { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
+                        'STOPPED_POLICY_ERROR': { bg: '#fee2e2', color: '#991b1b', border: '#fecaca' },
+                        'CANCELLED': { bg: '#fee2e2', color: '#991b1b', border: '#fecaca' },
+                        'COMPLETED': { bg: '#ecfdf5', color: '#047857', border: '#6ee7b7' },
+                        'READY': { bg: 'var(--bg-subtle)', color: 'var(--text-muted)', border: 'var(--border-color)' }
+                    };
+                    const sbc = statusBadgeColors[campStatus] || statusBadgeColors['READY'];
 
-                                if (l.status === 'WEBHOOK_DELIVERED') {
-                                    badgeText = '📨 DELIVERED';
-                                    color = '#0284c7';
-                                    bg = '#f0f9ff';
-                                    border = '#bae6fd';
-                                } else if (l.status === 'WEBHOOK_READ') {
-                                    badgeText = '👁️ READ';
-                                    color = '#7c3aed';
-                                    bg = '#f5f3ff';
-                                    border = '#ddd6fe';
-                                } else if (l.status === 'WEBHOOK_FAILED' || l.status === 'FAILED') {
-                                    badgeText = '✗ FAILED';
-                                    color = '#dc2626';
-                                    bg = '#fef2f2';
-                                    border = '#fecaca';
-                                }
+                    [badgeCampaignState, overviewStatusBadge].forEach(badge => {
+                        if (badge) {
+                            badge.style.display = 'inline-block';
+                            badge.textContent = campStatus.replace(/_/g, ' ');
+                            badge.style.background = sbc.bg;
+                            badge.style.color = sbc.color;
+                            badge.style.border = `1px solid ${sbc.border}`;
+                        }
+                    });
 
-                                const providerBadge = l.provider === 'cloud_api' 
-                                    ? '<span style="font-size:10px; font-weight:700; color:#1d4ed8; background:#dbeafe; padding:1px 6px; border-radius:4px; margin-left:6px;">☁️ Cloud API</span>' 
-                                    : '<span style="font-size:10px; font-weight:700; color:#065f46; background:#d1fae5; padding:1px 6px; border-radius:4px; margin-left:6px;">📱 Web/QR</span>';
+                    // 3. Button Visibility States
+                    const isLive = campStatus === 'RUNNING' || campStatus === 'BATCH_PAUSED';
+                    const isPaused = campStatus === 'PAUSED' || campStatus === 'STOPPED_POLICY_ERROR';
 
-                                const msgIdBadge = l.message_id 
-                                    ? `<span style="font-size:10px; color:#64748b; font-family:'JetBrains Mono',monospace; margin-left:6px; background:#f1f5f9; padding:1px 5px; border-radius:4px;" title="${escapeHtml(l.message_id)}">id: ${escapeHtml(l.message_id.length > 18 ? l.message_id.substring(0, 16) + '...' : l.message_id)}</span>` 
-                                    : '';
+                    [btnStopCampaign, btnOverviewPause].forEach(b => {
+                        if (b) b.style.display = isLive ? 'inline-flex' : 'none';
+                    });
+                    [btnResumeCampaign, btnOverviewResume].forEach(b => {
+                        if (b) b.style.display = isPaused ? 'inline-flex' : 'none';
+                    });
+                    [btnCancelCampaign, btnOverviewCancel].forEach(b => {
+                        if (b) b.style.display = (isLive || isPaused) ? 'inline-flex' : 'none';
+                    });
 
-                                const time = l.timestamp ? new Date(l.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' }) : '';
-                                const errDetail = l.error ? `<div style="font-size:11px; color:#b91c1c; margin-top:3px; word-break:break-word;">${escapeHtml(l.error)}</div>` : '';
+                    if (btnStartCampaign) {
+                        btnStartCampaign.disabled = isLive;
+                        btnStartCampaign.innerHTML = isLive
+                            ? '<span class="spinner" style="width:14px; height:14px;"></span> Dispatching messages...'
+                            : (isPaused ? '<span>⏸️ Campaign Paused</span>' : '<span>🚀 Send Message Campaign</span>');
+                    }
 
-                                return `
-                                    <div style="margin-bottom:6px; padding:7px 10px; background:${bg}; border:1px solid ${border}; border-radius:8px;">
-                                        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
-                                            <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
-                                                <span style="font-weight:700; color:${color}; font-size:10.5px; padding:2px 7px; border-radius:4px; background:#fff; border:1px solid ${border};">${badgeText}</span>
-                                                <strong style="color:var(--text-heading); margin-left:4px; font-size:12.5px;">+${l.phone}</strong>
-                                                ${providerBadge}
-                                                ${msgIdBadge}
-                                            </div>
-                                            <span style="font-size:11px; color:var(--text-muted); font-weight:500;">${time}</span>
+                    if (textProgressStatus) {
+                        textProgressStatus.textContent = isLive
+                            ? `Dispatching: ${sent} sent, ${delivered} delivered, ${failed} failed of ${total}`
+                            : (isPaused ? `Campaign paused at ${sent} sent. Click Resume to continue.` : `Finished: ${sent} sent, ${delivered} delivered.`);
+                    }
+
+                    // 4. Live logs list
+                    if (boxLiveLogs && data.logs) {
+                        boxLiveLogs.innerHTML = data.logs.map(l => {
+                            let badgeText = '✓ SENT';
+                            let color = '#059669';
+                            let bg = '#ecfdf5';
+                            let border = '#a7f3d0';
+
+                            if (l.status === 'WEBHOOK_DELIVERED') {
+                                badgeText = '📨 DELIVERED';
+                                color = '#0284c7';
+                                bg = '#f0f9ff';
+                                border = '#bae6fd';
+                            } else if (l.status === 'WEBHOOK_READ') {
+                                badgeText = '👁️ READ';
+                                color = '#7c3aed';
+                                bg = '#f5f3ff';
+                                border = '#ddd6fe';
+                            } else if (l.status === 'WEBHOOK_FAILED' || l.status === 'FAILED') {
+                                badgeText = '✗ FAILED';
+                                color = '#dc2626';
+                                bg = '#fef2f2';
+                                border = '#fecaca';
+                            }
+
+                            const providerBadge = l.provider === 'cloud_api' 
+                                ? '<span style="font-size:10px; font-weight:700; color:#1d4ed8; background:#dbeafe; padding:1px 6px; border-radius:4px; margin-left:6px;">☁️ Cloud API</span>' 
+                                : '<span style="font-size:10px; font-weight:700; color:#065f46; background:#d1fae5; padding:1px 6px; border-radius:4px; margin-left:6px;">📱 Web/QR</span>';
+
+                            const msgIdBadge = l.message_id 
+                                ? `<span style="font-size:10px; color:#64748b; font-family:'JetBrains Mono',monospace; margin-left:6px; background:var(--bg-card); padding:1px 5px; border-radius:4px;" title="${escapeHtml(l.message_id)}">id: ${escapeHtml(l.message_id.length > 18 ? l.message_id.substring(0, 16) + '...' : l.message_id)}</span>` 
+                                : '';
+
+                            const time = l.timestamp ? new Date(l.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' }) : '';
+                            const errDetail = l.error ? `<div style="font-size:11px; color:#b91c1c; margin-top:3px; word-break:break-word;">${escapeHtml(l.error)}</div>` : '';
+
+                            return `
+                                <div style="margin-bottom:6px; padding:7px 10px; background:${bg}; border:1px solid ${border}; border-radius:8px;">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                                        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:4px;">
+                                            <span style="font-weight:700; color:${color}; font-size:10.5px; padding:2px 7px; border-radius:4px; background:#fff; border:1px solid ${border};">${badgeText}</span>
+                                            <strong style="color:var(--text-heading); margin-left:4px; font-size:12.5px;">+${l.phone}</strong>
+                                            ${providerBadge}
+                                            ${msgIdBadge}
                                         </div>
-                                        ${errDetail}
+                                        <span style="font-size:11px; color:var(--text-muted); font-weight:500;">${time}</span>
                                     </div>
-                                `;
-                            }).join('');
-                            boxLiveLogs.scrollTop = boxLiveLogs.scrollHeight;
-                        } else if (campStatus === 'RUNNING' && total > 0 && sent === 0 && failed === 0) {
-                            boxLiveLogs.innerHTML = `<div style="color:var(--wa-dark-teal); font-weight:600; padding:12px; text-align:center;"><span class="spinner" style="width:14px; height:14px;"></span> Starting delivery sequence...</div>`;
-                        }
+                                    ${errDetail}
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    // 5. Update Activity Table
+                    loadCampaignContactsTable(campaignId, currentActivityFilter);
+
+                    if (campStatus === 'COMPLETED' || campStatus === 'CANCELLED') {
+                        if (campaignProgressTimer) clearInterval(campaignProgressTimer);
                     }
                 } catch (e) {
                     console.warn('Campaign progress check error:', e);
@@ -2534,72 +4436,61 @@
             }
 
             updateProgress();
-            campaignProgressTimer = setInterval(updateProgress, 1200);
+            campaignProgressTimer = setInterval(updateProgress, 1400);
         }
 
-        // Campaign Action Handlers (Stop / Pause, Resume, Cancel)
-        document.getElementById('btnStopCampaign')?.addEventListener('click', async () => {
+        // Action handlers: Pause / Resume / Cancel
+        async function handleCampaignPause() {
             if (!currentTrackingCampaignId) return;
-            const btn = document.getElementById('btnStopCampaign');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Stopping...';
             try {
                 const res = await fetch(`/api/campaigns/${currentTrackingCampaignId}/pause`, { method: 'POST' });
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.error || 'Failed to pause campaign');
                 trackCampaignProgress(currentTrackingCampaignId);
             } catch (err) {
-                alert('Stop Campaign Notice: ' + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<span>⏸️ Stop / Pause</span>';
+                alert('Pause Error: ' + err.message);
             }
-        });
+        }
 
-        document.getElementById('btnResumeCampaign')?.addEventListener('click', async () => {
+        async function handleCampaignResume() {
             if (!currentTrackingCampaignId) return;
-            const btn = document.getElementById('btnResumeCampaign');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Resuming...';
             try {
                 const res = await fetch(`/api/campaigns/${currentTrackingCampaignId}/resume`, { method: 'POST' });
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.error || 'Failed to resume campaign');
                 trackCampaignProgress(currentTrackingCampaignId);
             } catch (err) {
-                alert('Resume Campaign Notice: ' + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<span>▶️ Resume</span>';
+                alert('Resume Error: ' + err.message);
             }
-        });
+        }
 
-        document.getElementById('btnCancelCampaign')?.addEventListener('click', async () => {
+        async function handleCampaignCancel() {
             if (!currentTrackingCampaignId) return;
-            if (!confirm('Are you sure you want to stop and cancel this campaign? Any pending unsent messages will be cancelled.')) return;
-            const btn = document.getElementById('btnCancelCampaign');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner" style="width:14px; height:14px;"></span> Cancelling...';
+            if (!confirm('Cancel this campaign? Any pending unsent messages will be cancelled.')) return;
             try {
                 const res = await fetch(`/api/campaigns/${currentTrackingCampaignId}/cancel`, { method: 'POST' });
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.error || 'Failed to cancel campaign');
                 trackCampaignProgress(currentTrackingCampaignId);
             } catch (err) {
-                alert('Cancel Campaign Notice: ' + err.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<span>⏹️ Cancel</span>';
+                alert('Cancel Error: ' + err.message);
             }
-        });
+        }
 
-        // Automatically detect active or running campaign on load
+        document.getElementById('btnStopCampaign')?.addEventListener('click', handleCampaignPause);
+        document.getElementById('btnOverviewPause')?.addEventListener('click', handleCampaignPause);
+        document.getElementById('btnResumeCampaign')?.addEventListener('click', handleCampaignResume);
+        document.getElementById('btnOverviewResume')?.addEventListener('click', handleCampaignResume);
+        document.getElementById('btnCancelCampaign')?.addEventListener('click', handleCampaignCancel);
+        document.getElementById('btnOverviewCancel')?.addEventListener('click', handleCampaignCancel);
+
+        // Detect active campaign on load
         async function checkActiveCampaign() {
             try {
                 const res = await fetch('/api/campaigns');
                 const data = await res.json();
                 if (data && data.campaigns && data.campaigns.length) {
-                    const active = data.campaigns.find(c => c.status === 'RUNNING' || c.status === 'PAUSED');
+                    const active = data.campaigns.find(c => c.status === 'RUNNING' || c.status === 'PAUSED' || c.status === 'BATCH_PAUSED') || data.campaigns[0];
                     if (active) {
                         trackCampaignProgress(active.id);
                     }
@@ -2732,7 +4623,6 @@
         const displayCloudQuality = document.getElementById('displayCloudQuality');
         const displayCloudPhoneId = document.getElementById('displayCloudPhoneId');
 
-        const selectMetaTemplate = document.getElementById('selectMetaTemplate');
         const containerMetaTemplates = document.getElementById('containerMetaTemplates');
         const btnRefreshMetaTemplates = document.getElementById('btnRefreshMetaTemplates');
         const btnRefreshTemplatesOverview = document.getElementById('btnRefreshTemplatesOverview');

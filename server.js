@@ -125,7 +125,24 @@ const server = http.createServer(async (req, res) => {
 
         if (reqPath === '/api/campaigns' && req.method === 'POST') {
             const body = await parseJsonBody(req);
-            const { name, message = '', recipients = [], attachment = '', autoStart = true, delaySeconds = 3, provider = null, templateName = null } = body;
+            const {
+                name,
+                message = '',
+                recipients = [],
+                attachment = '',
+                autoStart = true,
+                delaySeconds = 3,
+                provider = null,
+                templateName = null,
+                whatsappAccountId = null,
+                batchSize = 20,
+                batchPauseMinutes = 10,
+                enablePersonalization = 1,
+                maxCampaignSize = 0,
+                stopOnError = 1,
+                scheduledAt = null,
+                templateParamsMapping = null
+            } = body;
 
             if ((!message || !message.trim()) && (!attachment || !attachment.trim())) {
                 return sendJson(res, 400, { success: false, error: 'Message content or image attachment is required' });
@@ -140,24 +157,39 @@ const server = http.createServer(async (req, res) => {
 
             const activeProvider = provider || db.getSetting('whatsapp_provider_mode', 'web_qr');
             const campaignName = name || `Campaign ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            const isScheduledFuture = scheduledAt && new Date(scheduledAt) > new Date();
+
             const campaign = db.createCampaign({
                 name: campaignName,
                 message: message,
                 attachment: attachment,
-                status: 'READY',
+                status: isScheduledFuture ? 'SCHEDULED' : 'READY',
                 provider: activeProvider,
-                templateName: templateName || null
+                templateName: templateName || null,
+                whatsappAccountId: whatsappAccountId ? parseInt(whatsappAccountId, 10) : null,
+                batchSize: parseInt(batchSize, 10) || 20,
+                batchPauseMinutes: parseInt(batchPauseMinutes, 10) || 10,
+                scheduledAt: scheduledAt || null,
+                enablePersonalization: enablePersonalization ? 1 : 0,
+                maxCampaignSize: parseInt(maxCampaignSize, 10) || 0,
+                stopOnError: stopOnError !== undefined ? (stopOnError ? 1 : 0) : 1,
+                templateParamsMapping: templateParamsMapping ? (typeof templateParamsMapping === 'string' ? templateParamsMapping : JSON.stringify(templateParamsMapping)) : null
             });
 
-            const queuedCount = db.enqueueCampaignJobs(campaign.id, recipients, message, attachment, activeProvider);
+            const queuedCount = db.enqueueCampaignJobs(campaign.id, recipients, message, attachment, activeProvider, {
+                templateParamsMapping,
+                maxCampaignSize: parseInt(maxCampaignSize, 10) || 0,
+                whatsappAccountId: campaign.whatsapp_account_id
+            });
 
-            if (autoStart) {
+            if (autoStart && !isScheduledFuture) {
                 queueWorker.startCampaign(campaign.id);
             }
 
             return sendJson(res, 201, {
                 success: true,
                 campaign: db.getCampaign(campaign.id),
+                overview: db.getCampaignOverview(campaign.id),
                 queuedCount,
                 provider: activeProvider,
                 delaySeconds: parsedDelaySec,
@@ -165,11 +197,35 @@ const server = http.createServer(async (req, res) => {
             });
         }
 
+        // Emergency Stop All Campaigns
+        if (reqPath === '/api/campaigns/emergency-stop' && req.method === 'POST') {
+            const result = await queueWorker.emergencyStopAll();
+            return sendJson(res, 200, {
+                success: true,
+                message: `Emergency stop triggered! Stopped ${result.stoppedCampaigns} active campaign(s).`,
+                ...result
+            });
+        }
+
         // Campaign Action Endpoints (/api/campaigns/:id/*)
-        const campaignActionMatch = reqPath.match(/^\/api\/campaigns\/(\d+)\/(start|pause|resume|cancel|retry|queue|logs)$/);
+        const campaignActionMatch = reqPath.match(/^\/api\/campaigns\/(\d+)\/(start|pause|resume|cancel|retry|queue|logs|overview|contacts)$/);
         if (campaignActionMatch) {
             const campaignId = parseInt(campaignActionMatch[1], 10);
             const action = campaignActionMatch[2];
+
+            if (action === 'overview' && req.method === 'GET') {
+                const overview = db.getCampaignOverview(campaignId);
+                if (!overview) return sendJson(res, 404, { success: false, error: 'Campaign not found' });
+                return sendJson(res, 200, { success: true, overview });
+            }
+
+            if (action === 'contacts' && req.method === 'GET') {
+                const status = parsedUrl.searchParams.get('status') || null;
+                const limit = parseInt(parsedUrl.searchParams.get('limit') || '100', 10);
+                const offset = parseInt(parsedUrl.searchParams.get('offset') || '0', 10);
+                const result = db.getCampaignContactsList(campaignId, { status, limit, offset });
+                return sendJson(res, 200, { success: true, ...result });
+            }
 
             if (action === 'queue' && req.method === 'GET') {
                 const summary = db.getCampaignQueueSummary(campaignId);
@@ -184,17 +240,21 @@ const server = http.createServer(async (req, res) => {
 
             if (action === 'logs' && req.method === 'GET') {
                 const summary = db.getCampaignQueueSummary(campaignId);
-                const logs = db.getLogs(campaignId, 50);
+                const logs = db.getLogs(campaignId, 100);
                 const campaign = db.getCampaign(campaignId);
+                const overview = db.getCampaignOverview(campaignId);
                 return sendJson(res, 200, {
                     success: true,
                     campaign,
+                    overview,
                     metrics: {
-                        total: summary?.counts?.total || 0,
-                        sent: summary?.counts?.sent || 0,
-                        failed: summary?.counts?.failed || 0,
+                        total: overview?.stats?.total || summary?.counts?.total || 0,
+                        sent: overview?.stats?.sent || summary?.counts?.sent || 0,
+                        failed: overview?.stats?.failed || summary?.counts?.failed || 0,
+                        delivered: overview?.stats?.delivered || 0,
+                        skipped: overview?.stats?.skipped || 0,
                         processing: summary?.counts?.processing || 0,
-                        pending: summary?.counts?.pending || 0
+                        pending: overview?.stats?.pending || summary?.counts?.pending || 0
                     },
                     counts: summary?.counts || {},
                     logs: logs || []
@@ -212,7 +272,7 @@ const server = http.createServer(async (req, res) => {
                 } else if (action === 'retry') {
                     result = await queueWorker.retryFailed(campaignId);
                 }
-                return sendJson(res, 200, { success: true, result, campaign: db.getCampaign(campaignId) });
+                return sendJson(res, 200, { success: true, result, campaign: db.getCampaign(campaignId), overview: db.getCampaignOverview(campaignId) });
             }
         }
 
@@ -364,9 +424,98 @@ const server = http.createServer(async (req, res) => {
         }
 
         // ==========================================
+        // 7.2 OPT-OUTS (DNC) API
+        // ==========================================
+        if (reqPath === '/api/optouts' && req.method === 'GET') {
+            const optouts = db.getOptOuts();
+            return sendJson(res, 200, { success: true, optouts, count: optouts.length });
+        }
+
+        if (reqPath === '/api/optouts' && req.method === 'POST') {
+            const body = await parseJsonBody(req);
+            if (!body.phone) {
+                return sendJson(res, 400, { success: false, error: 'Phone number is required' });
+            }
+            const record = db.addOptOut(body.phone, body.reason || 'Manual user opt-out');
+            return sendJson(res, 201, { success: true, optout: record });
+        }
+
+        const optoutDeleteMatch = reqPath.match(/^\/api\/optouts\/(.+)$/);
+        if (optoutDeleteMatch && req.method === 'DELETE') {
+            const phone = decodeURIComponent(optoutDeleteMatch[1]);
+            const deleted = db.removeOptOut(phone);
+            return sendJson(res, 200, { success: true, deleted, phone });
+        }
+
+        // ==========================================
         // 7.5 WHATSAPP WEB & META CLOUD API ROUTES
         // ==========================================
         if (reqPath.startsWith('/api/whatsapp/')) {
+            // Multi-Number WhatsApp Accounts Management
+            if (reqPath === '/api/whatsapp/accounts' && req.method === 'GET') {
+                const accounts = db.getWhatsAppAccounts();
+                return sendJson(res, 200, { success: true, accounts });
+            }
+
+            if (reqPath === '/api/whatsapp/accounts' && req.method === 'POST') {
+                const body = await parseJsonBody(req);
+                try {
+                    const created = db.createWhatsAppAccount(body);
+                    return sendJson(res, 201, { success: true, account: created });
+                } catch (err) {
+                    return sendJson(res, 400, { success: false, error: err.message });
+                }
+            }
+
+            const accountIdMatch = reqPath.match(/^\/api\/whatsapp\/accounts\/(\d+)(?:\/(test|toggle|templates))?$/);
+            if (accountIdMatch) {
+                const accId = parseInt(accountIdMatch[1], 10);
+                const subAction = accountIdMatch[2];
+
+                if (!subAction && req.method === 'GET') {
+                    const account = db.getWhatsAppAccount(accId);
+                    if (!account) return sendJson(res, 404, { success: false, error: 'Account not found' });
+                    return sendJson(res, 200, { success: true, account });
+                }
+
+                if (!subAction && req.method === 'PUT') {
+                    const body = await parseJsonBody(req);
+                    try {
+                        const updated = db.updateWhatsAppAccount(accId, body);
+                        return sendJson(res, 200, { success: true, account: updated });
+                    } catch (err) {
+                        return sendJson(res, 400, { success: false, error: err.message });
+                    }
+                }
+
+                if (!subAction && req.method === 'DELETE') {
+                    const deleted = db.deleteWhatsAppAccount(accId);
+                    return sendJson(res, 200, { success: true, deleted });
+                }
+
+                if (subAction === 'toggle' && req.method === 'POST') {
+                    const body = await parseJsonBody(req).catch(() => ({}));
+                    try {
+                        const updated = db.toggleWhatsAppAccount(accId, body.status);
+                        return sendJson(res, 200, { success: true, account: updated });
+                    } catch (err) {
+                        return sendJson(res, 400, { success: false, error: err.message });
+                    }
+                }
+
+                if (subAction === 'test' && req.method === 'POST') {
+                    const account = db.getWhatsAppAccount(accId, true);
+                    if (!account) return sendJson(res, 404, { success: false, error: 'Account not found' });
+                    const result = await messaging.cloudApiProvider.testConnection(account);
+                    return sendJson(res, result.success ? 200 : 400, result);
+                }
+
+                if (subAction === 'templates' && req.method === 'GET') {
+                    const refresh = parsedUrl.searchParams.get('refresh') === 'true';
+                    const result = await messaging.cloudApiProvider.fetchApprovedTemplates(refresh, accId);
+                    return sendJson(res, result.success ? 200 : 400, result);
+                }
+            }
             // Webhook Verification (GET /api/whatsapp/webhook)
             if (reqPath === '/api/whatsapp/webhook' && req.method === 'GET') {
                 const mode = parsedUrl.searchParams.get('hub.mode');

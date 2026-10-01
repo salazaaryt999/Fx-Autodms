@@ -109,6 +109,55 @@ class DatabaseService {
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS whatsapp_accounts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                phone_number TEXT,
+                phone_number_id TEXT UNIQUE NOT NULL,
+                business_account_id TEXT,
+                access_token TEXT NOT NULL,
+                api_version TEXT DEFAULT 'v22.0',
+                status TEXT DEFAULT 'ACTIVE',
+                quality_rating TEXT DEFAULT 'UNKNOWN',
+                verified_name TEXT,
+                code_verification_status TEXT,
+                error_message TEXT,
+                total_sent INTEGER DEFAULT 0,
+                total_delivered INTEGER DEFAULT 0,
+                total_failed INTEGER DEFAULT 0,
+                last_checked_at DATETIME,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS opt_outs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                phone TEXT UNIQUE NOT NULL,
+                reason TEXT,
+                source TEXT DEFAULT 'MANUAL',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS campaign_contacts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                campaign_id INTEGER NOT NULL,
+                contact_id INTEGER,
+                phone TEXT NOT NULL,
+                name TEXT,
+                company TEXT,
+                custom_field TEXT,
+                personalized_message TEXT,
+                template_params_json TEXT,
+                status TEXT DEFAULT 'PENDING',
+                message_id TEXT,
+                attempts INTEGER DEFAULT 0,
+                sent_at DATETIME,
+                delivered_at DATETIME,
+                error TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (campaign_id) REFERENCES campaigns (id),
+                UNIQUE (campaign_id, phone)
+            );
+
             CREATE TABLE IF NOT EXISTS settings (
                 key TEXT PRIMARY KEY,
                 value TEXT
@@ -117,17 +166,39 @@ class DatabaseService {
             CREATE INDEX IF NOT EXISTS idx_mq_campaign_status ON message_queue (campaign_id, status);
             CREATE INDEX IF NOT EXISTS idx_messages_phone ON messages (phone);
             CREATE INDEX IF NOT EXISTS idx_templates_category ON templates (category);
+            CREATE INDEX IF NOT EXISTS idx_wa_phone_id ON whatsapp_accounts (phone_number_id);
+            CREATE INDEX IF NOT EXISTS idx_optouts_phone ON opt_outs (phone);
+            CREATE INDEX IF NOT EXISTS idx_cc_camp_status ON campaign_contacts (campaign_id, status);
+            CREATE INDEX IF NOT EXISTS idx_cc_phone ON campaign_contacts (phone);
+            CREATE INDEX IF NOT EXISTS idx_cc_message_id ON campaign_contacts (message_id);
+            CREATE INDEX IF NOT EXISTS idx_cc_camp_phone ON campaign_contacts (campaign_id, phone);
+            CREATE INDEX IF NOT EXISTS idx_ml_campaign ON message_logs (campaign_id);
+            CREATE INDEX IF NOT EXISTS idx_ml_phone ON message_logs (phone);
+            CREATE INDEX IF NOT EXISTS idx_ml_message_id ON message_logs (message_id);
         `);
 
         // Safe migrations for existing databases to add columns if they don't exist
         const migrations = [
             "ALTER TABLE campaigns ADD COLUMN provider TEXT DEFAULT 'web_qr'",
             "ALTER TABLE campaigns ADD COLUMN template_name TEXT",
+            "ALTER TABLE campaigns ADD COLUMN whatsapp_account_id INTEGER",
+            "ALTER TABLE campaigns ADD COLUMN batch_size INTEGER DEFAULT 20",
+            "ALTER TABLE campaigns ADD COLUMN batch_pause_minutes INTEGER DEFAULT 10",
+            "ALTER TABLE campaigns ADD COLUMN batch_counter INTEGER DEFAULT 0",
+            "ALTER TABLE campaigns ADD COLUMN batch_paused_until DATETIME",
+            "ALTER TABLE campaigns ADD COLUMN scheduled_at DATETIME",
+            "ALTER TABLE campaigns ADD COLUMN enable_personalization INTEGER DEFAULT 1",
+            "ALTER TABLE campaigns ADD COLUMN max_campaign_size INTEGER DEFAULT 0",
+            "ALTER TABLE campaigns ADD COLUMN stop_on_error INTEGER DEFAULT 1",
+            "ALTER TABLE campaigns ADD COLUMN template_params_mapping TEXT",
+            "ALTER TABLE campaigns ADD COLUMN next_action_info TEXT",
+            "ALTER TABLE campaigns ADD COLUMN error_summary TEXT",
             "ALTER TABLE message_queue ADD COLUMN provider TEXT DEFAULT 'web_qr'",
             "ALTER TABLE message_queue ADD COLUMN message_id TEXT",
             "ALTER TABLE messages ADD COLUMN provider TEXT DEFAULT 'web_qr'",
             "ALTER TABLE messages ADD COLUMN message_id TEXT",
-            "ALTER TABLE message_logs ADD COLUMN message_id TEXT"
+            "ALTER TABLE message_logs ADD COLUMN message_id TEXT",
+            "ALTER TABLE message_logs ADD COLUMN whatsapp_account_id INTEGER"
         ];
         for (const sql of migrations) {
             try {
@@ -136,6 +207,9 @@ class DatabaseService {
                 // Column already exists or schema already updated
             }
         }
+
+        // Migrate single-account credentials into whatsapp_accounts if table is empty
+        this.migrateExistingCloudAccount();
 
         // Seed default settings if not exists
         this.setSettingIfMissing('messaging_mode', process.env.MESSAGING_MODE || 'local_whatsapp');
@@ -321,6 +395,220 @@ class DatabaseService {
         return newToken;
     }
 
+    // --- WhatsApp Accounts (Multi-Number Management) ---
+    migrateExistingCloudAccount() {
+        try {
+            const count = this.db.prepare('SELECT COUNT(*) as count FROM whatsapp_accounts').get()?.count || 0;
+            if (count === 0) {
+                const phoneId = this.getSetting('whatsapp_phone_number_id') || process.env.WHATSAPP_PHONE_NUMBER_ID;
+                const token = this.getSetting('whatsapp_access_token') || process.env.WHATSAPP_ACCESS_TOKEN;
+                const wabaId = this.getSetting('whatsapp_business_account_id') || process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
+                const apiVersion = this.getSetting('whatsapp_api_version') || 'v22.0';
+
+                if (phoneId && token) {
+                    this.db.prepare(`
+                        INSERT INTO whatsapp_accounts (name, phone_number, phone_number_id, business_account_id, access_token, api_version, status, quality_rating, verified_name)
+                        VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', 'GREEN', 'Primary WhatsApp Account')
+                    `).run('Primary Account', '', phoneId.trim(), (wabaId || '').trim(), token.trim(), apiVersion);
+                    console.log('[DB] Migrated existing WhatsApp Cloud API credentials to whatsapp_accounts table.');
+                }
+            }
+        } catch (e) {
+            console.warn('[DB] Migration notice for whatsapp_accounts:', e.message);
+        }
+    }
+
+    createWhatsAppAccount({ name, phone_number = '', phone_number_id, business_account_id = '', access_token, api_version = 'v22.0' }) {
+        if (!name || !phone_number_id || !access_token) {
+            throw new Error('Account name, Phone Number ID, and Access Token are required');
+        }
+
+        const cleanToken = access_token.trim();
+        const cleanPhoneId = String(phone_number_id).trim();
+        const cleanWaba = String(business_account_id || '').trim();
+        const cleanApiVer = (api_version || 'v22.0').trim();
+
+        const stmt = this.db.prepare(`
+            INSERT INTO whatsapp_accounts (name, phone_number, phone_number_id, business_account_id, access_token, api_version, status, quality_rating)
+            VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', 'UNKNOWN')
+        `);
+        const result = stmt.run(name.trim(), String(phone_number || '').trim(), cleanPhoneId, cleanWaba, cleanToken, cleanApiVer);
+        return this.getWhatsAppAccount(result.lastInsertRowid);
+    }
+
+    saveWhatsAppAccount(data) {
+        if (data.id) {
+            return this.updateWhatsAppAccount(data.id, data);
+        }
+        return this.createWhatsAppAccount(data);
+    }
+
+    getWhatsAppAccounts() {
+        const rows = this.db.prepare(`
+            SELECT id, name, phone_number, phone_number_id, business_account_id, api_version,
+                   status, quality_rating, verified_name, code_verification_status,
+                   error_message, total_sent, total_delivered, total_failed, last_checked_at, created_at,
+                   (CASE WHEN access_token IS NOT NULL AND length(access_token) > 0 THEN 1 ELSE 0 END) as has_access_token
+            FROM whatsapp_accounts
+            ORDER BY id ASC
+        `).all();
+
+        return rows.map(r => ({
+            ...r,
+            hasAccessToken: !!r.has_access_token,
+            maskedAccessToken: '••••••••••••••••'
+        }));
+    }
+
+    getWhatsAppAccount(id, includeSecretToken = false) {
+        const row = this.db.prepare('SELECT * FROM whatsapp_accounts WHERE id = ?').get(id);
+        if (!row) return null;
+        if (!includeSecretToken) {
+            row.maskedAccessToken = this.maskToken(row.access_token);
+            delete row.access_token;
+        }
+        return row;
+    }
+
+    getWhatsAppAccountByPhoneId(phoneNumberId, includeSecretToken = false) {
+        const row = this.db.prepare('SELECT * FROM whatsapp_accounts WHERE phone_number_id = ?').get(String(phoneNumberId).trim());
+        if (!row) return null;
+        if (!includeSecretToken) {
+            row.maskedAccessToken = this.maskToken(row.access_token);
+            delete row.access_token;
+        }
+        return row;
+    }
+
+    getDefaultWhatsAppAccount(includeSecretToken = false) {
+        const row = this.db.prepare("SELECT * FROM whatsapp_accounts WHERE status = 'ACTIVE' ORDER BY id ASC LIMIT 1").get();
+        if (!row) return null;
+        if (!includeSecretToken) {
+            row.maskedAccessToken = this.maskToken(row.access_token);
+            delete row.access_token;
+        }
+        return row;
+    }
+
+    updateWhatsAppAccount(id, data) {
+        const current = this.db.prepare('SELECT * FROM whatsapp_accounts WHERE id = ?').get(id);
+        if (!current) throw new Error('WhatsApp Account not found');
+
+        let tokenToSave = current.access_token;
+        if (data.access_token && typeof data.access_token === 'string') {
+            const trimmed = data.access_token.trim();
+            if (trimmed && !trimmed.includes('••••')) {
+                tokenToSave = trimmed;
+            }
+        }
+
+        const name = data.name !== undefined ? String(data.name).trim() : current.name;
+        const phone_number = data.phone_number !== undefined ? String(data.phone_number).trim() : current.phone_number;
+        const phone_number_id = data.phone_number_id !== undefined ? String(data.phone_number_id).trim() : current.phone_number_id;
+        const business_account_id = data.business_account_id !== undefined ? String(data.business_account_id).trim() : current.business_account_id;
+        const api_version = data.api_version !== undefined ? String(data.api_version).trim() : current.api_version;
+        const status = data.status !== undefined ? String(data.status).trim() : current.status;
+        const quality_rating = data.quality_rating !== undefined ? data.quality_rating : current.quality_rating;
+        const verified_name = data.verified_name !== undefined ? data.verified_name : current.verified_name;
+        const error_message = data.error_message !== undefined ? data.error_message : current.error_message;
+
+        this.db.prepare(`
+            UPDATE whatsapp_accounts
+            SET name = ?, phone_number = ?, phone_number_id = ?, business_account_id = ?,
+                access_token = ?, api_version = ?, status = ?, quality_rating = ?,
+                verified_name = ?, error_message = ?
+            WHERE id = ?
+        `).run(name, phone_number, phone_number_id, business_account_id, tokenToSave, api_version, status, quality_rating, verified_name, error_message, id);
+
+        return this.getWhatsAppAccount(id);
+    }
+
+    deleteWhatsAppAccount(id) {
+        const result = this.db.prepare('DELETE FROM whatsapp_accounts WHERE id = ?').run(id);
+        return result.changes > 0;
+    }
+
+    toggleWhatsAppAccount(id, status = null) {
+        const current = this.db.prepare('SELECT status FROM whatsapp_accounts WHERE id = ?').get(id);
+        if (!current) throw new Error('WhatsApp Account not found');
+        const nextStatus = status || (current.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE');
+        this.db.prepare('UPDATE whatsapp_accounts SET status = ? WHERE id = ?').run(nextStatus, id);
+        return this.getWhatsAppAccount(id);
+    }
+
+    updateWhatsAppAccountStats(id, { sentDelta = 0, deliveredDelta = 0, failedDelta = 0, error = null, quality = null, verifiedName = null, displayPhone = null }) {
+        if (!id) return;
+        const now = new Date().toISOString();
+        let query = `
+            UPDATE whatsapp_accounts 
+            SET total_sent = total_sent + ?, 
+                total_delivered = total_delivered + ?, 
+                total_failed = total_failed + ?,
+                last_checked_at = ?
+        `;
+        const params = [sentDelta, deliveredDelta, failedDelta, now];
+
+        if (error !== undefined) {
+            query += `, error_message = ?`;
+            params.push(error);
+        }
+        if (quality) {
+            query += `, quality_rating = ?`;
+            params.push(quality);
+        }
+        if (verifiedName) {
+            query += `, verified_name = ?`;
+            params.push(verifiedName);
+        }
+        if (displayPhone) {
+            query += `, phone_number = ?`;
+            params.push(displayPhone);
+        }
+
+        query += ` WHERE id = ?`;
+        params.push(id);
+
+        this.db.prepare(query).run(...params);
+    }
+
+    // --- Opt-Outs Management (Permanent Skip) ---
+    addOptOut(phone, reason = 'User requested opt-out', source = 'CAMPAIGN_REPLY') {
+        const cleanPhone = String(phone).replace(/[^0-9]/g, '');
+        if (!cleanPhone) return false;
+        try {
+            this.db.prepare(`
+                INSERT INTO opt_outs (phone, reason, source)
+                VALUES (?, ?, ?)
+                ON CONFLICT(phone) DO UPDATE SET reason = excluded.reason, source = excluded.source
+            `).run(cleanPhone, reason, source);
+            return true;
+        } catch (e) {
+            console.warn('[DB] addOptOut error:', e.message);
+            return false;
+        }
+    }
+
+    isOptedOut(phone) {
+        const cleanPhone = String(phone).replace(/[^0-9]/g, '');
+        if (!cleanPhone) return false;
+        const row = this.db.prepare('SELECT id FROM opt_outs WHERE phone = ?').get(cleanPhone);
+        return !!row;
+    }
+
+    getOptOuts(limit = 100, offset = 0) {
+        return this.db.prepare('SELECT * FROM opt_outs ORDER BY id DESC LIMIT ? OFFSET ?').all(limit, offset);
+    }
+
+    removeOptOut(phone) {
+        const cleanPhone = String(phone).replace(/[^0-9]/g, '');
+        const res = this.db.prepare('DELETE FROM opt_outs WHERE phone = ?').run(cleanPhone);
+        return res.changes > 0;
+    }
+
+    getOptOutCount() {
+        return this.db.prepare('SELECT COUNT(*) as count FROM opt_outs').get()?.count || 0;
+    }
+
     // --- Contacts Helpers ---
     upsertContact({ name = '', phone, company = '', tags = '' }) {
         const cleanPhone = String(phone).replace(/[^0-9]/g, '');
@@ -378,46 +666,122 @@ class DatabaseService {
     }
 
     // --- Campaigns Helpers ---
-    createCampaign({ name, message, attachment = '', status = 'DRAFT', provider = null, templateName = null }) {
-        const chosenProvider = provider || this.getSetting('whatsapp_provider_mode', 'web_qr');
+    createCampaign(opts = {}) {
+        const name = opts.name;
+        const message = opts.message || '';
+        const attachment = opts.attachment || '';
+        const status = opts.status || 'DRAFT';
+        const provider = opts.provider || null;
+        const templateName = opts.templateName || opts.template_name || null;
+        const whatsappAccountId = opts.whatsappAccountId !== undefined ? opts.whatsappAccountId : (opts.whatsapp_account_id !== undefined ? opts.whatsapp_account_id : opts.account_id);
+        const batchSize = opts.batchSize !== undefined ? opts.batchSize : (opts.batch_size !== undefined ? opts.batch_size : 20);
+        const batchPauseMinutes = opts.batchPauseMinutes !== undefined ? opts.batchPauseMinutes : (opts.batch_pause_minutes !== undefined ? opts.batch_pause_minutes : (opts.pause_minutes !== undefined ? opts.pause_minutes : 10));
+        const scheduledAt = opts.scheduledAt || opts.scheduled_at || null;
+        const enablePersonalization = opts.enablePersonalization !== undefined ? opts.enablePersonalization : (opts.enable_personalization !== undefined ? opts.enable_personalization : 1);
+        const maxCampaignSize = opts.maxCampaignSize !== undefined ? opts.maxCampaignSize : (opts.max_campaign_size !== undefined ? opts.max_campaign_size : 0);
+        const stopOnError = opts.stopOnError !== undefined ? opts.stopOnError : (opts.stop_on_error !== undefined ? opts.stop_on_error : (opts.stop_on_policy_error !== undefined ? opts.stop_on_policy_error : 1));
+        const templateParamsMapping = opts.templateParamsMapping || opts.template_params_mapping || null;
+
+        const chosenProvider = provider || this.getSetting('whatsapp_provider_mode', 'cloud_api');
+        
+        // Resolve WhatsApp Account ID if using cloud_api
+        let resolvedAccountId = whatsappAccountId;
+        if (!resolvedAccountId && chosenProvider === 'cloud_api') {
+            const defaultAcc = this.getDefaultWhatsAppAccount(false);
+            if (defaultAcc) resolvedAccountId = defaultAcc.id;
+        }
+
         const stmt = this.db.prepare(`
-            INSERT INTO campaigns (name, message, attachment, status, provider, template_name)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO campaigns (
+                name, message, attachment, status, provider, template_name,
+                whatsapp_account_id, batch_size, batch_pause_minutes, batch_counter,
+                scheduled_at, enable_personalization, max_campaign_size, stop_on_error,
+                template_params_mapping, next_action_info
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, 'Ready to start')
         `);
-        const result = stmt.run(name, message, attachment, status, chosenProvider, templateName || null);
+
+        const mappingStr = templateParamsMapping ? (typeof templateParamsMapping === 'object' ? JSON.stringify(templateParamsMapping) : String(templateParamsMapping)) : null;
+
+        const result = stmt.run(
+            name,
+            message,
+            attachment,
+            status,
+            chosenProvider,
+            templateName || null,
+            resolvedAccountId || null,
+            Math.max(1, parseInt(batchSize, 10) || 20),
+            Math.max(1, parseInt(batchPauseMinutes, 10) || 10),
+            scheduledAt || null,
+            enablePersonalization ? 1 : 0,
+            parseInt(maxCampaignSize, 10) || 0,
+            stopOnError ? 1 : 0,
+            mappingStr
+        );
+
         return this.getCampaign(result.lastInsertRowid);
     }
 
     getCampaign(id) {
-        return this.db.prepare('SELECT * FROM campaigns WHERE id = ?').get(id);
+        return this.db.prepare(`
+            SELECT c.*, 
+                   wa.name as account_name,
+                   wa.phone_number as account_phone,
+                   wa.phone_number_id as account_phone_number_id
+            FROM campaigns c
+            LEFT JOIN whatsapp_accounts wa ON c.whatsapp_account_id = wa.id
+            WHERE c.id = ?
+        `).get(id);
     }
 
     getCampaigns(limit = 50) {
         return this.db.prepare(`
             SELECT c.id, c.name, c.status, c.created_at, c.provider, c.template_name,
+                   c.whatsapp_account_id, c.batch_size, c.batch_pause_minutes, c.batch_counter,
+                   c.batch_paused_until, c.scheduled_at, c.next_action_info, c.error_summary,
+                   wa.name as account_name, wa.phone_number as account_phone,
                    (CASE WHEN c.attachment IS NOT NULL AND length(c.attachment) > 0 THEN 1 ELSE 0 END) as has_attachment,
-                   (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id) as total_jobs,
-                   (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status IN ('SUCCESS', 'SENT', 'DELIVERED', 'READ')) as sent_jobs,
-                   (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status = 'FAILED') as failed_jobs,
-                   (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status = 'PENDING') as pending_jobs,
-                   (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status = 'DELIVERED') as delivered_jobs,
-                   (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status = 'READ') as read_jobs
+                   COALESCE((SELECT COUNT(*) FROM campaign_contacts WHERE campaign_id = c.id), (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id)) as total_jobs,
+                   COALESCE((SELECT COUNT(*) FROM campaign_contacts WHERE campaign_id = c.id AND status IN ('SENT', 'DELIVERED', 'READ')), (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status IN ('SUCCESS', 'SENT', 'DELIVERED', 'READ'))) as sent_jobs,
+                   COALESCE((SELECT COUNT(*) FROM campaign_contacts WHERE campaign_id = c.id AND status = 'DELIVERED'), (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status = 'DELIVERED')) as delivered_jobs,
+                   COALESCE((SELECT COUNT(*) FROM campaign_contacts WHERE campaign_id = c.id AND status = 'FAILED'), (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status = 'FAILED')) as failed_jobs,
+                   COALESCE((SELECT COUNT(*) FROM campaign_contacts WHERE campaign_id = c.id AND status = 'SKIPPED'), 0) as skipped_jobs,
+                   COALESCE((SELECT COUNT(*) FROM campaign_contacts WHERE campaign_id = c.id AND status = 'OPTED_OUT'), 0) as opted_out_jobs,
+                   COALESCE((SELECT COUNT(*) FROM campaign_contacts WHERE campaign_id = c.id AND status = 'PENDING'), (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status = 'PENDING')) as pending_jobs,
+                   COALESCE((SELECT COUNT(*) FROM campaign_contacts WHERE campaign_id = c.id AND status = 'PROCESSING'), (SELECT COUNT(*) FROM message_queue WHERE campaign_id = c.id AND status = 'PROCESSING')) as processing_jobs
             FROM campaigns c 
+            LEFT JOIN whatsapp_accounts wa ON c.whatsapp_account_id = wa.id
             ORDER BY c.id DESC LIMIT ?
         `).all(limit);
     }
 
-    updateCampaignStatus(campaignId, status) {
-        this.db.prepare('UPDATE campaigns SET status = ? WHERE id = ?').run(status, campaignId);
+    updateCampaignStatus(campaignId, status, nextActionInfo = null, errorSummary = null) {
+        let query = 'UPDATE campaigns SET status = ?';
+        const params = [status];
+
+        if (nextActionInfo !== null) {
+            query += ', next_action_info = ?';
+            params.push(nextActionInfo);
+        }
+        if (errorSummary !== null) {
+            query += ', error_summary = ?';
+            params.push(errorSummary);
+        }
+
+        query += ' WHERE id = ?';
+        params.push(campaignId);
+
+        this.db.prepare(query).run(...params);
         return this.getCampaign(campaignId);
     }
 
-    // --- Queue Management ---
-    enqueueCampaignJobs(campaignId, recipients, messageTemplate, attachment = '', provider = null) {
+    // --- Queue & Contacts Management ---
+    enqueueCampaignJobs(campaignId, recipients, messageTemplate = '', attachment = '', provider = null) {
         const campaign = this.getCampaign(campaignId);
-        const campaignProvider = provider || campaign?.provider || this.getSetting('whatsapp_provider_mode', 'web_qr');
+        const campaignProvider = provider || campaign?.provider || this.getSetting('whatsapp_provider_mode', 'cloud_api');
 
-        // Optimization: Save Base64 images to disk once instead of storing multi-MB strings hundreds of times
+        // Optimization: Save Base64 images to disk once
         let savedAttachmentPath = attachment;
         if (attachment && attachment.startsWith('data:')) {
             try {
@@ -433,48 +797,130 @@ class DatabaseService {
             }
         }
 
-        const insertStmt = this.db.prepare(`
-            INSERT INTO message_queue (campaign_id, contact_id, phone, message_body, attachment, status, provider)
-            VALUES (?, ?, ?, ?, ?, 'PENDING', ?)
+        const insertContactStmt = this.db.prepare(`
+            INSERT OR IGNORE INTO campaign_contacts (
+                campaign_id, contact_id, phone, name, company, custom_field,
+                personalized_message, template_params_json, status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
-        let count = 0;
+        const insertQueueStmt = this.db.prepare(`
+            INSERT INTO message_queue (campaign_id, contact_id, phone, message_body, attachment, status, provider)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        // Cap recipients if max_campaign_size is set
+        let targetRecipients = recipients;
+        if (campaign?.max_campaign_size && campaign.max_campaign_size > 0) {
+            targetRecipients = recipients.slice(0, campaign.max_campaign_size);
+        }
+
+        let enqueuedCount = 0;
+        let optedOutCount = 0;
+        let skippedDuplicateCount = 0;
+
+        // Parse template parameter mappings if any
+        let paramMapping = null;
+        if (campaign?.template_params_mapping) {
+            try {
+                paramMapping = JSON.parse(campaign.template_params_mapping);
+            } catch (e) {}
+        }
+
         this.db.exec('BEGIN TRANSACTION');
         try {
-            for (const item of recipients) {
-                let phone = '';
+            for (const item of targetRecipients) {
+                let rawPhone = '';
                 let contactName = '';
                 let company = '';
-                let product = '';
+                let customField = '';
                 let contactId = null;
 
                 if (typeof item === 'object' && item !== null) {
-                    phone = String(item.phone || item.number || '').replace(/[^0-9]/g, '');
+                    rawPhone = String(item.phone || item.number || '').replace(/[^0-9]/g, '');
                     contactName = item.name || '';
                     company = item.company || '';
-                    product = item.product || '';
+                    customField = item.custom_field || item.customField || item.custom || item.product || '';
                 } else {
-                    phone = String(item).replace(/[^0-9]/g, '');
+                    rawPhone = String(item).replace(/[^0-9]/g, '');
                 }
 
-                if (!phone) continue;
+                if (!rawPhone || rawPhone.length < 8) continue;
 
-                // Fast contact upsert
-                const contact = this.upsertContact({ name: contactName, phone, company });
-                if (contact) {
-                    contactId = contact.id;
-                    contactName = contactName || contact.name || '';
-                    company = company || contact.company || '';
+                // Check duplicate within this campaign
+                const alreadyInCamp = this.db.prepare('SELECT id FROM campaign_contacts WHERE campaign_id = ? AND phone = ?').get(campaignId, rawPhone);
+                if (alreadyInCamp) {
+                    skippedDuplicateCount++;
+                    continue;
                 }
 
-                // Placeholder tags substitution
-                let finalMsg = messageTemplate
-                    .replace(/\{name\}/gi, contactName || '')
-                    .replace(/\{company\}/gi, company || '')
-                    .replace(/\{product\}/gi, product || '');
+                // Upsert into master contacts directory
+                const masterContact = this.upsertContact({ name: contactName, phone: rawPhone, company });
+                if (masterContact) {
+                    contactId = masterContact.id;
+                    contactName = contactName || masterContact.name || '';
+                    company = company || masterContact.company || '';
+                }
 
-                insertStmt.run(campaignId, contactId, phone, finalMsg, savedAttachmentPath, campaignProvider);
-                count++;
+                // Check Opt-Out status
+                const isOptOut = this.isOptedOut(rawPhone);
+                const initialStatus = isOptOut ? 'OPTED_OUT' : 'PENDING';
+                if (isOptOut) optedOutCount++;
+
+                // Personalize message body: {name}, {phone}, {company}, {custom_field}
+                let finalMsg = messageTemplate || '';
+                if (campaign?.enable_personalization !== 0 && finalMsg) {
+                    finalMsg = finalMsg
+                        .replace(/\{name\}/gi, contactName || '')
+                        .replace(/\{phone\}/gi, rawPhone ? `+${rawPhone}` : '')
+                        .replace(/\{company\}/gi, company || '')
+                        .replace(/\{custom_field\}/gi, customField || '')
+                        .replace(/\{product\}/gi, customField || '');
+                }
+
+                // Assemble contact template params if applicable
+                let contactParamsJson = null;
+                if (paramMapping && typeof paramMapping === 'object') {
+                    const resolvedParams = {};
+                    for (const [k, v] of Object.entries(paramMapping)) {
+                        let val = String(v || '');
+                        val = val
+                            .replace(/\{name\}/gi, contactName || '')
+                            .replace(/\{phone\}/gi, rawPhone ? `+${rawPhone}` : '')
+                            .replace(/\{company\}/gi, company || '')
+                            .replace(/\{custom_field\}/gi, customField || '');
+                        resolvedParams[k] = val;
+                    }
+                    contactParamsJson = JSON.stringify(resolvedParams);
+                }
+
+                insertContactStmt.run(
+                    campaignId,
+                    contactId,
+                    rawPhone,
+                    contactName,
+                    company,
+                    customField,
+                    finalMsg,
+                    contactParamsJson,
+                    initialStatus
+                );
+
+                // Sync to legacy message_queue for backward compatibility
+                insertQueueStmt.run(
+                    campaignId,
+                    contactId,
+                    rawPhone,
+                    finalMsg,
+                    savedAttachmentPath,
+                    initialStatus,
+                    campaignProvider
+                );
+
+                if (!isOptOut) {
+                    enqueuedCount++;
+                }
             }
             this.db.exec('COMMIT');
         } catch (err) {
@@ -482,14 +928,91 @@ class DatabaseService {
             throw err;
         }
 
-        this.updateCampaignStatus(campaignId, 'READY');
-        return count;
+        this.updateCampaignStatus(campaignId, 'READY', `Ready to send (${enqueuedCount} queued${optedOutCount ? `, ${optedOutCount} opted out` : ''})`);
+        return enqueuedCount;
     }
 
     getNextPendingJob(campaignId = null) {
+        const now = new Date().toISOString();
+
+        // 1. Fetch next candidate contact from campaign_contacts
+        let query = `
+            SELECT cc.id as contact_job_id, cc.id, cc.campaign_id, cc.contact_id, cc.phone, 
+                   cc.name, cc.company, cc.custom_field, cc.personalized_message as message_body,
+                   cc.template_params_json, cc.status, cc.attempts,
+                   c.name as campaign_name, c.status as campaign_status, c.provider as campaign_provider,
+                   c.attachment, c.template_name, c.whatsapp_account_id,
+                   c.batch_size, c.batch_pause_minutes, c.batch_counter, c.batch_paused_until,
+                   c.scheduled_at, c.stop_on_error,
+                   wa.phone_number_id as account_phone_number_id,
+                   wa.access_token as account_access_token,
+                   wa.business_account_id as account_waba_id,
+                   wa.api_version as account_api_version,
+                   wa.status as account_status,
+                   wa.name as account_name
+            FROM campaign_contacts cc
+            JOIN campaigns c ON cc.campaign_id = c.id
+            LEFT JOIN whatsapp_accounts wa ON c.whatsapp_account_id = wa.id
+            WHERE cc.status = 'PENDING'
+              AND (c.status = 'RUNNING' OR (c.status = 'READY' AND (c.scheduled_at IS NULL OR c.scheduled_at <= ?)))
+        `;
+
+        const params = [now];
+        if (campaignId) {
+            query += ` AND cc.campaign_id = ?`;
+            params.push(campaignId);
+        }
+        query += ` ORDER BY cc.id ASC LIMIT 10`;
+
+        const candidates = this.db.prepare(query).all(...params);
+
+        for (const candidate of candidates) {
+            // Check if campaign is scheduled for future
+            if (candidate.scheduled_at && candidate.scheduled_at > now) {
+                continue;
+            }
+
+            // Check if campaign is currently in Batch Cooldown
+            if (candidate.batch_paused_until) {
+                if (candidate.batch_paused_until > now) {
+                    const diffSec = Math.max(1, Math.round((new Date(candidate.batch_paused_until).getTime() - Date.now()) / 1000));
+                    const resumeTime = new Date(candidate.batch_paused_until).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    this.db.prepare(`UPDATE campaigns SET next_action_info = ? WHERE id = ?`).run(`Batch cooldown: resumes at ${resumeTime} (~${Math.ceil(diffSec / 60)} min)`, candidate.campaign_id);
+                    continue; // Skip, currently cooling down
+                } else {
+                    // Cooldown has elapsed! Reset batch counter and clear pause
+                    this.db.prepare(`
+                        UPDATE campaigns 
+                        SET batch_paused_until = NULL, batch_counter = 0, next_action_info = 'Running batch'
+                        WHERE id = ?
+                    `).run(candidate.campaign_id);
+                    candidate.batch_paused_until = null;
+                    candidate.batch_counter = 0;
+                }
+            }
+
+            // Check account status if using official Cloud API
+            if (candidate.campaign_provider === 'cloud_api' && candidate.account_status && candidate.account_status !== 'ACTIVE') {
+                this.updateCampaignStatus(candidate.campaign_id, 'PAUSED', `Account ${candidate.account_name || ''} is ${candidate.account_status}. Re-activate number to continue.`);
+                continue;
+            }
+
+            // Check if number was added to opt-out list while queued
+            if (this.isOptedOut(candidate.phone)) {
+                this.db.prepare("UPDATE campaign_contacts SET status = 'OPTED_OUT', error = 'Opted out before dispatch' WHERE id = ?").run(candidate.contact_job_id);
+                this.db.prepare("UPDATE message_queue SET status = 'SKIPPED', error = 'Opted out before dispatch' WHERE campaign_id = ? AND phone = ?").run(candidate.campaign_id, candidate.phone);
+                continue;
+            }
+
+            // Candidate is eligible to process!
+            return candidate;
+        }
+
+        // Fallback check on legacy message_queue if campaign_contacts is empty
         if (campaignId) {
             return this.db.prepare(`
-                SELECT q.*, c.status as campaign_status, c.provider as campaign_provider
+                SELECT q.*, q.id as contact_job_id, c.status as campaign_status, c.provider as campaign_provider,
+                       c.whatsapp_account_id, c.batch_size, c.batch_pause_minutes, c.batch_counter, c.batch_paused_until
                 FROM message_queue q
                 JOIN campaigns c ON q.campaign_id = c.id
                 WHERE q.campaign_id = ? AND q.status = 'PENDING' AND c.status = 'RUNNING'
@@ -497,54 +1020,111 @@ class DatabaseService {
             `).get(campaignId);
         }
 
-        return this.db.prepare(`
-            SELECT q.*, c.status as campaign_status, c.provider as campaign_provider
-            FROM message_queue q
-            JOIN campaigns c ON q.campaign_id = c.id
-            WHERE q.status = 'PENDING' AND c.status = 'RUNNING'
-            ORDER BY q.id ASC LIMIT 1
-        `).get();
+        return null;
     }
 
     lockJobForProcessing(jobId) {
-        const stmt = this.db.prepare("UPDATE message_queue SET status = 'PROCESSING', attempts = attempts + 1 WHERE id = ? AND status = 'PENDING'");
-        const result = stmt.run(jobId);
-        return result.changes > 0;
+        // Atomically lock in campaign_contacts
+        const resCC = this.db.prepare("UPDATE campaign_contacts SET status = 'PROCESSING', attempts = attempts + 1 WHERE id = ? AND status = 'PENDING'").run(jobId);
+        // Also update message_queue if mirroring
+        this.db.prepare("UPDATE message_queue SET status = 'PROCESSING', attempts = attempts + 1 WHERE id = ? AND status = 'PENDING'").run(jobId);
+        return resCC.changes > 0;
     }
 
-    completeJob(jobId, { success, error = null, messageId = null, simulated = false }) {
-        const status = success ? 'SUCCESS' : 'FAILED';
+    completeJob(jobId, { success, error = null, messageId = null, simulated = false, statusOverride = null, accountId = null }) {
+        let finalStatus = statusOverride || (success ? 'SENT' : 'FAILED');
         const now = new Date().toISOString();
 
+        // 1. Update campaign_contacts
         this.db.prepare(`
-            UPDATE message_queue 
+            UPDATE campaign_contacts
             SET status = ?, sent_at = ?, error = ?, message_id = COALESCE(?, message_id)
             WHERE id = ?
-        `).run(status, now, error, messageId, jobId);
+        `).run(finalStatus, now, error, messageId, jobId);
 
-        const job = this.db.prepare('SELECT id, campaign_id, contact_id, phone, message_body, attachment, message_id, provider FROM message_queue WHERE id = ?').get(jobId);
-        if (job) {
+        // Fetch completed record
+        let contact = this.db.prepare('SELECT * FROM campaign_contacts WHERE id = ?').get(jobId);
+
+        // Sync with legacy message_queue
+        this.db.prepare(`
+            UPDATE message_queue
+            SET status = ?, sent_at = ?, error = ?, message_id = COALESCE(?, message_id)
+            WHERE (id = ? OR (campaign_id = ? AND phone = ?))
+        `).run(finalStatus, now, error, messageId, jobId, contact?.campaign_id || 0, contact?.phone || '');
+
+        if (!contact) {
+            contact = this.db.prepare('SELECT * FROM message_queue WHERE id = ?').get(jobId);
+        }
+
+        if (contact) {
+            const campaignId = contact.campaign_id;
+            const campaign = this.getCampaign(campaignId);
+            const resolvedAccId = accountId || campaign?.whatsapp_account_id || null;
+
+            // Log activity to message_logs
             this.db.prepare(`
-                INSERT INTO message_logs (campaign_id, contact_id, phone, status, timestamp, error, message_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            `).run(job.campaign_id, job.contact_id, job.phone, status, now, error, messageId || job.message_id);
+                INSERT INTO message_logs (campaign_id, contact_id, phone, status, timestamp, error, message_id, whatsapp_account_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `).run(campaignId, contact.contact_id, contact.phone, finalStatus, now, error, messageId || contact.message_id, resolvedAccId);
 
+            // Log message to messages
             this.db.prepare(`
                 INSERT INTO messages (campaign_id, contact_id, phone, message_body, attachment, status, created_at, provider, message_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `).run(job.campaign_id, job.contact_id, job.phone, job.message_body, job.attachment, status, now, job.provider || 'web_qr', messageId || job.message_id);
+            `).run(campaignId, contact.contact_id, contact.phone, contact.personalized_message || contact.message_body || '', campaign?.attachment || '', finalStatus, now, campaign?.provider || 'cloud_api', messageId || contact.message_id);
 
-            // Check if all jobs for this campaign are finished
-            const remaining = this.db.prepare(`
-                SELECT COUNT(*) as count FROM message_queue
+            // Update Account Statistics
+            if (resolvedAccId) {
+                this.updateWhatsAppAccountStats(resolvedAccId, {
+                    sentDelta: success ? 1 : 0,
+                    failedDelta: (!success && finalStatus === 'FAILED') ? 1 : 0,
+                    error: error || undefined
+                });
+            }
+
+            // Check Batch Cooldown
+            if (success && campaign) {
+                const newBatchCount = (campaign.batch_counter || 0) + 1;
+                const batchSize = Math.max(1, campaign.batch_size || 20);
+
+                // Check if more pending contacts exist in campaign
+                const pendingRemaining = this.db.prepare(`
+                    SELECT COUNT(*) as count FROM campaign_contacts
+                    WHERE campaign_id = ? AND status = 'PENDING'
+                `).get(campaignId)?.count || 0;
+
+                if (pendingRemaining > 0 && newBatchCount >= batchSize) {
+                    // Trigger Batch Cooldown Pause!
+                    const pauseMins = Math.max(1, campaign.batch_pause_minutes || 10);
+                    const resumeDate = new Date(Date.now() + pauseMins * 60000);
+                    const resumeTime = resumeDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    this.db.prepare(`
+                        UPDATE campaigns
+                        SET batch_counter = 0,
+                            batch_paused_until = ?,
+                            next_action_info = ?
+                        WHERE id = ?
+                    `).run(resumeDate.toISOString(), `Batch paused (${newBatchCount}/${batchSize}). Resuming next batch at ${resumeTime} (~${pauseMins} min cooldown).`, campaignId);
+
+                    console.log(`[Campaign Queue] Campaign #${campaignId} reached batch limit of ${batchSize}. Cooling down until ${resumeTime}.`);
+                } else {
+                    this.db.prepare('UPDATE campaigns SET batch_counter = ? WHERE id = ?').run(newBatchCount, campaignId);
+                }
+            }
+
+            // Check if all jobs in campaign are finished
+            const remainingCount = this.db.prepare(`
+                SELECT COUNT(*) as count FROM campaign_contacts
                 WHERE campaign_id = ? AND status IN ('PENDING', 'PROCESSING')
-            `).get(job.campaign_id).count;
+            `).get(campaignId)?.count || 0;
 
-            if (remaining === 0) {
-                this.updateCampaignStatus(job.campaign_id, 'COMPLETED');
+            if (remainingCount === 0) {
+                this.updateCampaignStatus(campaignId, 'COMPLETED', 'Campaign completed successfully.');
             }
         }
-        return job;
+
+        return contact;
     }
 
     /**
@@ -560,43 +1140,37 @@ class DatabaseService {
             errorMsg = e.title ? `[Code ${e.code}] ${e.title}: ${e.message || ''}` : (e.message || JSON.stringify(e));
         }
 
-        // 1. Try finding job by message_id = wamid
-        let job = wamid ? this.db.prepare('SELECT * FROM message_queue WHERE message_id = ?').get(wamid) : null;
-        if (!job && cleanPhone) {
-            // Fallback: look for most recent job to this recipient phone
-            job = this.db.prepare(`
-                SELECT * FROM message_queue 
-                WHERE phone = ? 
-                ORDER BY id DESC LIMIT 1
-            `).get(cleanPhone);
+        // 1. Try finding job by message_id = wamid in campaign_contacts
+        let contact = wamid ? this.db.prepare('SELECT * FROM campaign_contacts WHERE message_id = ?').get(wamid) : null;
+        if (!contact && cleanPhone) {
+            contact = this.db.prepare('SELECT * FROM campaign_contacts WHERE phone = ? ORDER BY id DESC LIMIT 1').get(cleanPhone);
         }
 
-        if (job) {
-            // Map webhook status to queue status
-            if (rawStatus === 'FAILED') {
-                this.db.prepare(`UPDATE message_queue SET status = 'FAILED', error = ? WHERE id = ?`).run(errorMsg || 'Meta delivery failed', job.id);
-            } else if (rawStatus === 'DELIVERED') {
-                this.db.prepare(`UPDATE message_queue SET status = 'DELIVERED' WHERE id = ?`).run(job.id);
-            } else if (rawStatus === 'READ') {
-                this.db.prepare(`UPDATE message_queue SET status = 'READ' WHERE id = ?`).run(job.id);
-            }
+        if (contact) {
+            let nextStatus = contact.status;
+            if (rawStatus === 'DELIVERED') nextStatus = 'DELIVERED';
+            else if (rawStatus === 'READ') nextStatus = 'READ';
+            else if (rawStatus === 'FAILED') nextStatus = 'FAILED';
 
-            // Update messages record
-            if (wamid) {
-                this.db.prepare(`UPDATE messages SET status = ? WHERE message_id = ?`).run(rawStatus, wamid);
-            } else {
-                this.db.prepare(`UPDATE messages SET status = ? WHERE phone = ? AND id = (SELECT MAX(id) FROM messages WHERE phone = ?)`).run(rawStatus, cleanPhone, cleanPhone);
-            }
+            this.db.prepare(`
+                UPDATE campaign_contacts 
+                SET status = ?, delivered_at = CASE WHEN ? = 'DELIVERED' THEN ? ELSE delivered_at END, error = COALESCE(?, error)
+                WHERE id = ?
+            `).run(nextStatus, rawStatus, now, errorMsg, contact.id);
 
-            // Insert into message_logs for the campaign
+            // Sync with message_queue
+            this.db.prepare("UPDATE message_queue SET status = ?, error = COALESCE(?, error) WHERE (message_id = ? OR (campaign_id = ? AND phone = ?))")
+                .run(nextStatus, errorMsg, wamid || '', contact.campaign_id, cleanPhone);
+
+            // Log event
             this.db.prepare(`
                 INSERT INTO message_logs (campaign_id, contact_id, phone, status, timestamp, error, message_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            `).run(job.campaign_id, job.contact_id, cleanPhone || job.phone, `WEBHOOK_${rawStatus}`, now, errorMsg, wamid || job.message_id);
+            `).run(contact.campaign_id, contact.contact_id, cleanPhone || contact.phone, `WEBHOOK_${rawStatus}`, now, errorMsg, wamid || contact.message_id);
 
-            return { matched: true, jobId: job.id, campaignId: job.campaign_id, status: rawStatus };
+            return { matched: true, contactId: contact.id, campaignId: contact.campaign_id, status: rawStatus };
         } else {
-            // Unmatched job, record in general message_logs
+            // Record in general message_logs
             this.db.prepare(`
                 INSERT INTO message_logs (campaign_id, contact_id, phone, status, timestamp, error, message_id)
                 VALUES (NULL, NULL, ?, ?, ?, ?, ?)
@@ -604,6 +1178,184 @@ class DatabaseService {
 
             return { matched: false, status: rawStatus };
         }
+    }
+
+    /**
+     * Comprehensive Campaign Overview Data for Dashboard
+     */
+    getCampaignOverview(campaignId) {
+        const campaign = this.getCampaign(campaignId);
+        if (!campaign) return null;
+
+        const counts = this.db.prepare(`
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status IN ('SENT', 'DELIVERED', 'READ') THEN 1 ELSE 0 END) as sent,
+                SUM(CASE WHEN status = 'DELIVERED' THEN 1 ELSE 0 END) as delivered,
+                SUM(CASE WHEN status = 'READ' THEN 1 ELSE 0 END) as read,
+                SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) as failed,
+                SUM(CASE WHEN status = 'SKIPPED' THEN 1 ELSE 0 END) as skipped,
+                SUM(CASE WHEN status = 'OPTED_OUT' THEN 1 ELSE 0 END) as opted_out,
+                SUM(CASE WHEN status = 'PROCESSING' THEN 1 ELSE 0 END) as processing,
+                SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) as pending
+            FROM campaign_contacts WHERE campaign_id = ?
+        `).get(campaignId);
+
+        // Fallback to message_queue counts if campaign_contacts is empty
+        const total = counts?.total || this.db.prepare('SELECT COUNT(*) as count FROM message_queue WHERE campaign_id = ?').get(campaignId)?.count || 0;
+        const sent = counts?.sent || this.db.prepare("SELECT COUNT(*) as count FROM message_queue WHERE campaign_id = ? AND status IN ('SUCCESS', 'SENT', 'DELIVERED', 'READ')").get(campaignId)?.count || 0;
+        const delivered = counts?.delivered || this.db.prepare("SELECT COUNT(*) as count FROM message_queue WHERE campaign_id = ? AND status = 'DELIVERED'").get(campaignId)?.count || 0;
+        const failed = counts?.failed || this.db.prepare("SELECT COUNT(*) as count FROM message_queue WHERE campaign_id = ? AND status = 'FAILED'").get(campaignId)?.count || 0;
+        const pending = counts?.pending || this.db.prepare("SELECT COUNT(*) as count FROM message_queue WHERE campaign_id = ? AND status = 'PENDING'").get(campaignId)?.count || 0;
+        const processing = counts?.processing || this.db.prepare("SELECT COUNT(*) as count FROM message_queue WHERE campaign_id = ? AND status = 'PROCESSING'").get(campaignId)?.count || 0;
+        const skipped = counts?.skipped || 0;
+        const optedOut = counts?.opted_out || 0;
+        const remaining = pending + processing;
+
+        const batchSize = Math.max(1, campaign.batch_size || 20);
+        const currentBatch = Math.min(batchSize, campaign.batch_counter || 0);
+
+        // Calculate next action text
+        let nextAction = campaign.next_action_info || 'Ready';
+        if (campaign.batch_paused_until && new Date(campaign.batch_paused_until) > new Date()) {
+            const timeStr = new Date(campaign.batch_paused_until).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            nextAction = `Batch cooldown: Resuming next batch at ${timeStr}`;
+        } else if (campaign.status === 'RUNNING') {
+            nextAction = `Processing batch (${currentBatch} / ${batchSize})`;
+        } else if (campaign.status === 'PAUSED') {
+            nextAction = 'Paused by user';
+        } else if (campaign.status === 'COMPLETED') {
+            nextAction = 'Campaign completed';
+        }
+
+        // Get last API response / error from recent logs
+        const lastLog = this.db.prepare(`
+            SELECT status, timestamp, error, message_id FROM message_logs
+            WHERE campaign_id = ? ORDER BY id DESC LIMIT 1
+        `).get(campaignId);
+
+        return {
+            campaign: {
+                id: campaign.id,
+                name: campaign.name,
+                status: campaign.status,
+                provider: campaign.provider,
+                templateName: campaign.template_name,
+                createdAt: campaign.created_at,
+                scheduledAt: campaign.scheduled_at,
+                batchSize: campaign.batch_size,
+                batchPauseMinutes: campaign.batch_pause_minutes,
+                batchCounter: campaign.batch_counter,
+                batchPausedUntil: campaign.batch_paused_until,
+                stopOnError: campaign.stop_on_error
+            },
+            connectedAccount: {
+                id: campaign.whatsapp_account_id,
+                name: campaign.account_name || 'Default Account',
+                phone: campaign.account_phone || ''
+            },
+            metrics: {
+                total,
+                sent,
+                delivered,
+                read: counts?.read || 0,
+                failed,
+                skipped,
+                optedOut,
+                pending,
+                processing,
+                remaining
+            },
+            batch: {
+                currentBatch,
+                batchSize,
+                batchCounter: campaign.batch_counter || 0,
+                batchPauseMinutes: campaign.batch_pause_minutes || 10,
+                batchPausedUntil: campaign.batch_paused_until,
+                isCoolingDown: !!(campaign.batch_paused_until && new Date(campaign.batch_paused_until) > new Date())
+            },
+            progress: {
+                processed: sent + failed + skipped + optedOut,
+                total,
+                percentage: total > 0 ? Math.min(100, Math.round(((sent + failed + skipped + optedOut) / total) * 100)) : 0
+            },
+            nextAction,
+            lastApiResponse: lastLog ? {
+                status: lastLog.status,
+                timestamp: lastLog.timestamp,
+                error: lastLog.error,
+                messageId: lastLog.message_id
+            } : null
+        };
+    }
+
+    /**
+     * Get Campaign Contacts Activity List with Filtering (All, Pending, Sent, Delivered, Failed, Skipped, Opted Out)
+     */
+    getCampaignContactsList(campaignId, { status = 'ALL', limit = 50, offset = 0, search = '' } = {}) {
+        let query = `
+            SELECT cc.id, cc.campaign_id, cc.contact_id, cc.phone, cc.name, cc.company,
+                   cc.custom_field, cc.status, cc.message_id, cc.attempts,
+                   cc.sent_at, cc.delivered_at, cc.error,
+                   substr(cc.personalized_message, 1, 80) as message_preview
+            FROM campaign_contacts cc
+            WHERE cc.campaign_id = ?
+        `;
+        const params = [campaignId];
+
+        const upperStatus = String(status || 'ALL').toUpperCase();
+        if (upperStatus !== 'ALL') {
+            if (upperStatus === 'SKIPPED') {
+                query += ` AND cc.status IN ('SKIPPED', 'OPTED_OUT')`;
+            } else if (upperStatus === 'SENT') {
+                query += ` AND cc.status IN ('SENT', 'DELIVERED', 'READ')`;
+            } else {
+                query += ` AND cc.status = ?`;
+                params.push(upperStatus);
+            }
+        }
+
+        if (search && search.trim()) {
+            query += ` AND (cc.phone LIKE ? OR cc.name LIKE ? OR cc.company LIKE ?)`;
+            const s = `%${search.trim()}%`;
+            params.push(s, s, s);
+        }
+
+        query += ` ORDER BY cc.id DESC LIMIT ? OFFSET ?`;
+        params.push(limit, offset);
+
+        const rows = this.db.prepare(query).all(...params);
+
+        const totalFiltered = this.db.prepare(`
+            SELECT COUNT(*) as count FROM campaign_contacts cc
+            WHERE cc.campaign_id = ?
+            ${upperStatus !== 'ALL' ? (upperStatus === 'SKIPPED' ? "AND cc.status IN ('SKIPPED', 'OPTED_OUT')" : (upperStatus === 'SENT' ? "AND cc.status IN ('SENT', 'DELIVERED', 'READ')" : "AND cc.status = '" + upperStatus + "'")) : ''}
+        `).get(campaignId)?.count || 0;
+
+        return { contacts: rows, total: totalFiltered };
+    }
+
+    /**
+     * Emergency Stop All Running & Paused Campaigns
+     */
+    emergencyStopAll() {
+        const runningCampaigns = this.db.prepare("SELECT id FROM campaigns WHERE status IN ('RUNNING', 'PAUSED', 'READY')").all();
+        this.db.prepare("UPDATE campaigns SET status = 'CANCELLED', next_action_info = 'Emergency Stopped', error_summary = 'Emergency stop triggered by user' WHERE status IN ('RUNNING', 'PAUSED', 'READY')").run();
+        this.db.prepare("UPDATE campaign_contacts SET status = 'SKIPPED', error = 'Emergency stop cancelled' WHERE status IN ('PENDING', 'PROCESSING')").run();
+        this.db.prepare("UPDATE message_queue SET status = 'SKIPPED', error = 'Emergency stop cancelled' WHERE status IN ('PENDING', 'PROCESSING')").run();
+        return {
+            success: true,
+            stoppedCount: runningCampaigns.length,
+            campaignIds: runningCampaigns.map(c => c.id)
+        };
+    }
+
+    retryFailed(campaignId) {
+        // Reset all failed jobs for this campaign back to PENDING
+        this.db.prepare("UPDATE campaign_contacts SET status = 'PENDING', error = NULL WHERE campaign_id = ? AND status = 'FAILED'").run(campaignId);
+        this.db.prepare("UPDATE message_queue SET status = 'PENDING', error = NULL WHERE campaign_id = ? AND status = 'FAILED'").run(campaignId);
+        this.updateCampaignStatus(campaignId, 'RUNNING', 'Retrying failed messages');
+        return { success: true, campaignId };
     }
 
     /**
@@ -630,8 +1382,9 @@ class DatabaseService {
     }
 
     resetStaleJobs() {
-        const result = this.db.prepare("UPDATE message_queue SET status = 'PENDING' WHERE status = 'PROCESSING'").run();
-        return result.changes;
+        const resQueue = this.db.prepare("UPDATE message_queue SET status = 'PENDING' WHERE status = 'PROCESSING'").run();
+        const resContacts = this.db.prepare("UPDATE campaign_contacts SET status = 'PENDING' WHERE status = 'PROCESSING'").run();
+        return (resQueue.changes || 0) + (resContacts.changes || 0);
     }
 
     /**
