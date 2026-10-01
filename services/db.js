@@ -198,7 +198,10 @@ class DatabaseService {
             "ALTER TABLE messages ADD COLUMN provider TEXT DEFAULT 'web_qr'",
             "ALTER TABLE messages ADD COLUMN message_id TEXT",
             "ALTER TABLE message_logs ADD COLUMN message_id TEXT",
-            "ALTER TABLE message_logs ADD COLUMN whatsapp_account_id INTEGER"
+            "ALTER TABLE message_logs ADD COLUMN whatsapp_account_id INTEGER",
+            "ALTER TABLE whatsapp_accounts ADD COLUMN session_id TEXT",
+            "ALTER TABLE whatsapp_accounts ADD COLUMN provider TEXT DEFAULT 'web_qr'",
+            "ALTER TABLE whatsapp_accounts ADD COLUMN is_default INTEGER DEFAULT 0"
         ];
         for (const sql of migrations) {
             try {
@@ -208,7 +211,8 @@ class DatabaseService {
             }
         }
 
-        // Migrate single-account credentials into whatsapp_accounts if table is empty
+        // Migrate active Baileys session and existing cloud accounts
+        this.migrateExistingSessions();
         this.migrateExistingCloudAccount();
 
         // Seed default settings if not exists
@@ -396,6 +400,33 @@ class DatabaseService {
     }
 
     // --- WhatsApp Accounts (Multi-Number Management) ---
+    migrateExistingSessions() {
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const credsPath = path.resolve(__dirname, '../data/baileys_auth/creds.json');
+            if (fs.existsSync(credsPath)) {
+                const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
+                if (creds?.me?.id) {
+                    const rawDigits = creds.me.id.split(':')[0] || creds.me.id.split('@')[0] || '';
+                    const phone = rawDigits ? `+${rawDigits}` : '+916301509260';
+                    const name = creds.me.name || 'Primary WhatsApp Line';
+
+                    const existing = this.db.prepare('SELECT id FROM whatsapp_accounts WHERE phone_number = ?').get(phone);
+                    if (!existing) {
+                        this.db.prepare(`
+                            INSERT INTO whatsapp_accounts (name, phone_number, phone_number_id, business_account_id, access_token, api_version, status, quality_rating, verified_name, session_id, provider, is_default)
+                            VALUES (?, ?, 'default', 'LOCAL_QR', 'QR_AUTH', 'v22.0', 'CONNECTED', 'ACTIVE', ?, 'default', 'web_qr', 1)
+                        `).run(name, phone, name);
+                        console.log(`[DB] Auto-registered primary WhatsApp Web session: ${phone} (${name})`);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('[DB] Migration notice for baileys sessions:', e.message);
+        }
+    }
+
     migrateExistingCloudAccount() {
         try {
             const count = this.db.prepare('SELECT COUNT(*) as count FROM whatsapp_accounts').get()?.count || 0;
@@ -405,10 +436,10 @@ class DatabaseService {
                 const wabaId = this.getSetting('whatsapp_business_account_id') || process.env.WHATSAPP_BUSINESS_ACCOUNT_ID;
                 const apiVersion = this.getSetting('whatsapp_api_version') || 'v22.0';
 
-                if (phoneId && token) {
+                if (phoneId && token && !token.includes('SECRET')) {
                     this.db.prepare(`
-                        INSERT INTO whatsapp_accounts (name, phone_number, phone_number_id, business_account_id, access_token, api_version, status, quality_rating, verified_name)
-                        VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', 'GREEN', 'Primary WhatsApp Account')
+                        INSERT INTO whatsapp_accounts (name, phone_number, phone_number_id, business_account_id, access_token, api_version, status, quality_rating, verified_name, provider)
+                        VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', 'GREEN', 'Primary WhatsApp Account', 'cloud_api')
                     `).run('Primary Account', '', phoneId.trim(), (wabaId || '').trim(), token.trim(), apiVersion);
                     console.log('[DB] Migrated existing WhatsApp Cloud API credentials to whatsapp_accounts table.');
                 }
@@ -416,6 +447,41 @@ class DatabaseService {
         } catch (e) {
             console.warn('[DB] Migration notice for whatsapp_accounts:', e.message);
         }
+    }
+
+    upsertQrAccount({ phone, name = null, sessionId = null, status = 'CONNECTED', isDefault = 0 }) {
+        const cleanPhone = String(phone || '').replace(/[^0-9+]/g, '');
+        const cleanName = name || cleanPhone || 'WhatsApp Line';
+        const cleanSessionId = sessionId || (cleanPhone ? `session_${cleanPhone.replace(/[^0-9]/g, '')}` : `session_${Date.now()}`);
+
+        const existing = this.db.prepare('SELECT id FROM whatsapp_accounts WHERE phone_number = ?').get(cleanPhone);
+        if (existing) {
+            this.db.prepare(`
+                UPDATE whatsapp_accounts
+                SET name = COALESCE(?, name),
+                    status = ?,
+                    session_id = COALESCE(?, session_id),
+                    provider = 'web_qr',
+                    last_checked_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).run(cleanName, status, cleanSessionId, existing.id);
+            return this.getWhatsAppAccount(existing.id);
+        } else {
+            const hasDefault = this.db.prepare('SELECT COUNT(*) as count FROM whatsapp_accounts WHERE is_default = 1').get()?.count || 0;
+            const makeDefault = isDefault || (hasDefault === 0 ? 1 : 0);
+            const stmt = this.db.prepare(`
+                INSERT INTO whatsapp_accounts (name, phone_number, phone_number_id, business_account_id, access_token, api_version, status, quality_rating, session_id, provider, is_default)
+                VALUES (?, ?, ?, 'LOCAL_QR', 'QR_AUTH', 'v22.0', ?, 'ACTIVE', ?, 'web_qr', ?)
+            `);
+            const result = stmt.run(cleanName, cleanPhone, cleanSessionId, status, cleanSessionId, makeDefault);
+            return this.getWhatsAppAccount(result.lastInsertRowid);
+        }
+    }
+
+    setDefaultWhatsAppAccount(id) {
+        this.db.prepare('UPDATE whatsapp_accounts SET is_default = 0').run();
+        this.db.prepare('UPDATE whatsapp_accounts SET is_default = 1 WHERE id = ?').run(id);
+        return this.getWhatsAppAccount(id);
     }
 
     createWhatsAppAccount({ name, phone_number = '', phone_number_id, business_account_id = '', access_token, api_version = 'v22.0' }) {
@@ -448,13 +514,15 @@ class DatabaseService {
             SELECT id, name, phone_number, phone_number_id, business_account_id, api_version,
                    status, quality_rating, verified_name, code_verification_status,
                    error_message, total_sent, total_delivered, total_failed, last_checked_at, created_at,
+                   session_id, provider, is_default,
                    (CASE WHEN access_token IS NOT NULL AND length(access_token) > 0 THEN 1 ELSE 0 END) as has_access_token
             FROM whatsapp_accounts
-            ORDER BY id ASC
+            ORDER BY is_default DESC, id ASC
         `).all();
 
         return rows.map(r => ({
             ...r,
+            provider: r.provider || 'web_qr',
             hasAccessToken: !!r.has_access_token,
             maskedAccessToken: '••••••••••••••••'
         }));

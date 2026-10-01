@@ -1,7 +1,7 @@
 /**
  * Local WhatsApp Multi-Device Transport Provider (Baileys)
- * 100% Free, Local, Direct WhatsApp Connection (No Green-API, No Cloud Gateway).
- * Connects directly using WhatsApp Multi-Device Protocol via QR Code.
+ * Multi-Account Support: Link multiple phone numbers via QR Code scan.
+ * Each account maintains its own isolated socket session, queue, and stats.
  */
 
 const fs = require('fs');
@@ -27,6 +27,7 @@ class BaileysProvider extends MessagingProvider {
         super(config);
         this.mode = 'local_whatsapp';
         this.authDir = path.resolve(__dirname, '../../data/baileys_auth');
+        this.sessionsDir = path.resolve(__dirname, '../../data/baileys_sessions');
         this.sock = null;
         this.status = 'DISCONNECTED'; // 'DISCONNECTED' | 'INITIALIZING' | 'SCAN_QR' | 'PAIRING_CODE' | 'CONNECTED'
         this.qrDataUrl = null;
@@ -37,9 +38,16 @@ class BaileysProvider extends MessagingProvider {
         this.isConnecting = false;
         this.reconnectAttempts = 0;
 
-        // Ensure auth directory exists
+        // Multi-Account sessions pool: accountId (number) -> sessionState
+        this.sessions = new Map();
+        this.pendingQr = null;
+
+        // Ensure directories exist
         if (!fs.existsSync(this.authDir)) {
             fs.mkdirSync(this.authDir, { recursive: true });
+        }
+        if (!fs.existsSync(this.sessionsDir)) {
+            fs.mkdirSync(this.sessionsDir, { recursive: true });
         }
 
         // Restore known connected phone from DB if available
@@ -52,13 +60,14 @@ class BaileysProvider extends MessagingProvider {
     /**
      * Remove all files from auth folder to allow completely fresh QR generation
      */
-    clearAuthFiles() {
+    clearAuthFiles(dir = null) {
+        const targetDir = dir || this.authDir;
         try {
-            if (fs.existsSync(this.authDir)) {
-                const files = fs.readdirSync(this.authDir);
+            if (fs.existsSync(targetDir)) {
+                const files = fs.readdirSync(targetDir);
                 for (const file of files) {
                     try {
-                        const filePath = path.join(this.authDir, file);
+                        const filePath = path.join(targetDir, file);
                         if (fs.statSync(filePath).isDirectory()) {
                             fs.rmSync(filePath, { recursive: true, force: true });
                         } else {
@@ -137,7 +146,7 @@ class BaileysProvider extends MessagingProvider {
     }
 
     /**
-     * Initialize connection to WhatsApp Multi-Device
+     * Initialize primary connection to WhatsApp Multi-Device
      */
     async connect(force = false) {
         if (this.status === 'CONNECTED' && this.sock && !force) {
@@ -152,7 +161,6 @@ class BaileysProvider extends MessagingProvider {
             return this.waitForQrOrConnected(6000);
         }
 
-        // Close any pre-existing or orphaned socket before opening new one
         if (this.sock) {
             try { this.sock.end(); } catch (e) {}
             this.sock = null;
@@ -164,7 +172,6 @@ class BaileysProvider extends MessagingProvider {
         try {
             const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
             const { version } = await fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1043857760] }));
-
             const logger = pino({ level: 'silent' });
 
             this.sock = makeWASocket({
@@ -190,10 +197,7 @@ class BaileysProvider extends MessagingProvider {
                         this.qrDataUrl = await QRCode.toDataURL(qr, {
                             margin: 2,
                             width: 280,
-                            color: {
-                                dark: '#000000',
-                                light: '#ffffff'
-                            }
+                            color: { dark: '#000000', light: '#ffffff' }
                         });
                         this.status = 'SCAN_QR';
                         this.isConnecting = false;
@@ -214,10 +218,31 @@ class BaileysProvider extends MessagingProvider {
                     const userId = this.sock?.user?.id || '';
                     const rawDigits = userId.split(':')[0] || userId.split('@')[0] || '';
                     this.connectedPhone = rawDigits ? `+${rawDigits}` : 'Connected Device';
-                    this.connectedName = this.sock?.user?.name || 'Local Account';
+                    this.connectedName = this.sock?.user?.name || 'Primary WhatsApp Line';
 
                     db.setSetting('whatsapp_connected_phone', this.connectedPhone);
                     db.setSetting('messaging_mode', 'local_whatsapp');
+
+                    // Register in DB
+                    const account = db.upsertQrAccount({
+                        phone: this.connectedPhone,
+                        name: this.connectedName,
+                        sessionId: 'default',
+                        status: 'CONNECTED',
+                        isDefault: 1
+                    });
+
+                    // Store in multi-session pool
+                    if (account && account.id) {
+                        this.sessions.set(account.id, {
+                            accountId: account.id,
+                            authDir: this.authDir,
+                            sock: this.sock,
+                            status: 'CONNECTED',
+                            phone: this.connectedPhone,
+                            name: this.connectedName
+                        });
+                    }
 
                     console.log(`[Local WhatsApp] Connected successfully! Account: ${this.connectedPhone} (${this.connectedName})`);
                 }
@@ -267,89 +292,294 @@ class BaileysProvider extends MessagingProvider {
         }
     }
 
+    // =========================================================================
+    // MULTI-ACCOUNT QR LOGIN & MANAGEMENT
+    // =========================================================================
+
     /**
-     * Request an 8-character Pairing Code to link WhatsApp using phone number (all countries supported)
-     * @param {string} phoneNumber - Full phone number with country code (e.g. 919876543210, 15551234567, 447123456789)
-     * @param {string} [customCode] - Optional custom verification code
+     * Start a new QR session for linking a WhatsApp number
      */
-    async requestPairingCode(phoneNumber, customCode = null) {
-        let cleanDigits = String(phoneNumber || '').replace(/[^0-9]/g, '');
-
-        if (!cleanDigits || cleanDigits.length < 8 || cleanDigits.length > 15) {
-            throw new Error('Please enter a valid phone number with country code (8 to 15 digits).');
+    async startNewQrSession() {
+        const tempAuthDir = path.join(this.sessionsDir, `temp_qr_${Date.now()}`);
+        if (!fs.existsSync(tempAuthDir)) {
+            fs.mkdirSync(tempAuthDir, { recursive: true });
         }
 
-        if (this.status === 'CONNECTED' && this.sock) {
-            return {
-                success: true,
-                status: 'CONNECTED',
-                phone: this.connectedPhone,
-                name: this.connectedName,
-                message: `WhatsApp is already connected as ${this.connectedPhone}`
-            };
+        // Clean up previous pending QR socket if any
+        if (this.pendingQr && this.pendingQr.sock) {
+            try { this.pendingQr.sock.end(); } catch (e) {}
         }
 
-        // Reset previous pairing state
-        this.pairingCode = null;
-        this.pairingPhone = cleanDigits;
-
-        // If no active socket or connection is not open, ensure socket is ready
-        if (!this.sock || !this.sock.ws || !this.sock.ws.isOpen) {
-            console.log('[Local WhatsApp] Initializing socket connection for pairing / verification code...');
-            this.isConnecting = false;
-            await this.connect(false).catch(e => console.warn('[Local WhatsApp] Connect notice:', e.message));
-        }
-
-        // Wait for socket to be open
-        if (this.sock) {
-            try {
-                await this.sock.waitForSocketOpen();
-            } catch (waitErr) {
-                console.warn('[Local WhatsApp] waitForSocketOpen notice:', waitErr.message);
-            }
-        }
-
-        if (!this.sock) {
-            throw new Error('Socket failed to initialize. Please check your internet connection and try again.');
-        }
-
-        // Check if already registered
-        if (this.sock.authState?.creds?.registered) {
-            return {
-                success: true,
-                status: 'CONNECTED',
-                phone: this.connectedPhone,
-                message: 'WhatsApp device is already registered and active.'
-            };
-        }
+        this.pendingQr = {
+            tempAuthDir,
+            sock: null,
+            status: 'INITIALIZING',
+            qrDataUrl: null,
+            connectedAccount: null,
+            error: null,
+            createdAt: Date.now()
+        };
 
         try {
-            console.log(`[Local WhatsApp] Requesting 8-digit code from WhatsApp for +${cleanDigits}...`);
-            let cleanCustomCode = null;
-            if (customCode) {
-                cleanCustomCode = String(customCode).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-                if (cleanCustomCode.length !== 8) {
-                    cleanCustomCode = null;
+            const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
+            const { version } = await fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1043857760] }));
+            const logger = pino({ level: 'silent' });
+
+            const sock = makeWASocket({
+                version,
+                logger,
+                printQRInTerminal: false,
+                auth: {
+                    creds: state.creds,
+                    keys: makeCacheableSignalKeyStore(state.keys, logger)
+                },
+                browser: Browsers.ubuntu('Chrome'),
+                generateHighQualityLinkPreview: true,
+                syncFullHistory: false
+            });
+
+            this.pendingQr.sock = sock;
+            sock.ev.on('creds.update', saveCreds);
+
+            sock.ev.on('connection.update', async (update) => {
+                const { connection, lastDisconnect, qr } = update;
+
+                if (qr) {
+                    try {
+                        this.pendingQr.qrDataUrl = await QRCode.toDataURL(qr, {
+                            margin: 2,
+                            width: 320,
+                            color: { dark: '#000000', light: '#ffffff' }
+                        });
+                        this.pendingQr.status = 'SCAN_QR';
+                        console.log('[Multi-Account QR] New QR ready to scan.');
+                    } catch (err) {
+                        console.error('[Multi-Account QR] QR encoding error:', err.message);
+                    }
                 }
+
+                if (connection === 'open') {
+                    const userId = sock?.user?.id || '';
+                    const rawDigits = userId.split(':')[0] || userId.split('@')[0] || '';
+                    const phone = rawDigits ? `+${rawDigits}` : 'Connected Device';
+                    const name = sock?.user?.name || `WhatsApp Line ${phone}`;
+
+                    console.log(`[Multi-Account QR] Successfully authenticated: ${phone} (${name})`);
+
+                    // 1. Save or update account in SQLite
+                    const account = db.upsertQrAccount({
+                        phone,
+                        name,
+                        status: 'CONNECTED'
+                    });
+
+                    // 2. Move temp auth files to permanent directory
+                    const permanentAuthDir = path.join(this.sessionsDir, `session_${account.id}`);
+                    if (!fs.existsSync(permanentAuthDir)) {
+                        fs.mkdirSync(permanentAuthDir, { recursive: true });
+                    }
+                    try {
+                        const files = fs.readdirSync(tempAuthDir);
+                        for (const f of files) {
+                            fs.copyFileSync(path.join(tempAuthDir, f), path.join(permanentAuthDir, f));
+                        }
+                    } catch (e) {
+                        console.warn('[Multi-Account QR] Error copying auth files:', e.message);
+                    }
+
+                    // 3. Register active session in pool
+                    this.sessions.set(account.id, {
+                        accountId: account.id,
+                        authDir: permanentAuthDir,
+                        sock,
+                        status: 'CONNECTED',
+                        phone,
+                        name,
+                        reconnectAttempts: 0
+                    });
+
+                    // If default socket was empty, also assign as default
+                    if (!this.sock || this.status !== 'CONNECTED') {
+                        this.sock = sock;
+                        this.status = 'CONNECTED';
+                        this.connectedPhone = phone;
+                        this.connectedName = name;
+                    }
+
+                    this.pendingQr.status = 'CONNECTED';
+                    this.pendingQr.connectedAccount = account;
+                }
+
+                if (connection === 'close') {
+                    if (this.pendingQr && this.pendingQr.status !== 'CONNECTED') {
+                        this.pendingQr.status = 'DISCONNECTED';
+                    }
+                }
+            });
+
+            // Wait up to 6 seconds for QR code generation
+            const startTime = Date.now();
+            while (Date.now() - startTime < 6000) {
+                if (this.pendingQr?.qrDataUrl || this.pendingQr?.status === 'CONNECTED') break;
+                await new Promise(r => setTimeout(r, 100));
             }
 
-            const rawCode = await this.sock.requestPairingCode(cleanDigits, cleanCustomCode || undefined);
-            const formattedCode = rawCode ? (rawCode.match(/.{1,4}/g)?.join('-') || rawCode) : rawCode;
-
-            this.pairingCode = formattedCode;
-            this.status = 'PAIRING_CODE';
-
-            console.log(`[Local WhatsApp] Code ready: ${formattedCode} for +${cleanDigits}`);
             return {
                 success: true,
-                pairingCode: formattedCode,
-                phone: `+${cleanDigits}`,
-                status: this.status
+                status: this.pendingQr?.status || 'INITIALIZING',
+                qr: this.pendingQr?.qrDataUrl || null
             };
         } catch (err) {
-            console.error('[Local WhatsApp] Failed to process pairing code:', err.message);
-            throw new Error(`Failed to request code from WhatsApp: ${err.message}`);
+            console.error('[Multi-Account QR] Failed to start new QR session:', err.message);
+            if (this.pendingQr) {
+                this.pendingQr.status = 'ERROR';
+                this.pendingQr.error = err.message;
+            }
+            throw err;
         }
+    }
+
+    /**
+     * Get pending QR status for client polling
+     */
+    getPendingQrStatus() {
+        if (!this.pendingQr) {
+            return { success: true, status: 'DISCONNECTED', qr: null };
+        }
+        return {
+            success: true,
+            status: this.pendingQr.status,
+            qr: this.pendingQr.qrDataUrl,
+            account: this.pendingQr.connectedAccount,
+            error: this.pendingQr.error
+        };
+    }
+
+    /**
+     * Connect a specific saved secondary account by accountId
+     */
+    async connectAccountSession(accountId, authDir) {
+        if (!fs.existsSync(authDir)) return null;
+
+        try {
+            const { state, saveCreds } = await useMultiFileAuthState(authDir);
+            const { version } = await fetchLatestBaileysVersion().catch(() => ({ version: [2, 3000, 1043857760] }));
+            const logger = pino({ level: 'silent' });
+
+            const sock = makeWASocket({
+                version,
+                logger,
+                printQRInTerminal: false,
+                auth: {
+                    creds: state.creds,
+                    keys: makeCacheableSignalKeyStore(state.keys, logger)
+                },
+                browser: Browsers.ubuntu('Chrome'),
+                generateHighQualityLinkPreview: true,
+                syncFullHistory: false
+            });
+
+            sock.ev.on('creds.update', saveCreds);
+
+            const sessionObj = {
+                accountId,
+                authDir,
+                sock,
+                status: 'INITIALIZING',
+                phone: null,
+                name: null,
+                reconnectAttempts: 0
+            };
+            this.sessions.set(accountId, sessionObj);
+
+            sock.ev.on('connection.update', (update) => {
+                const { connection } = update;
+                if (connection === 'open') {
+                    sessionObj.status = 'CONNECTED';
+                    const userId = sock?.user?.id || '';
+                    const rawDigits = userId.split(':')[0] || userId.split('@')[0] || '';
+                    sessionObj.phone = rawDigits ? `+${rawDigits}` : '';
+                    sessionObj.name = sock?.user?.name || '';
+                    db.db.prepare("UPDATE whatsapp_accounts SET status = 'CONNECTED', last_checked_at = CURRENT_TIMESTAMP WHERE id = ?").run(accountId);
+                    console.log(`[Multi-Account] Reconnected account #${accountId} (${sessionObj.phone})`);
+                }
+                if (connection === 'close') {
+                    sessionObj.status = 'DISCONNECTED';
+                    db.db.prepare("UPDATE whatsapp_accounts SET status = 'DISCONNECTED' WHERE id = ?").run(accountId);
+                }
+            });
+
+            return sessionObj;
+        } catch (err) {
+            console.warn(`[Multi-Account] Failed to connect session #${accountId}:`, err.message);
+            return null;
+        }
+    }
+
+    /**
+     * Disconnect and log out a specific account
+     */
+    async disconnectAccount(accountId) {
+        const numId = parseInt(accountId, 10);
+        const session = this.sessions.get(numId) || this.sessions.get(String(accountId));
+        if (session) {
+            try {
+                if (session.sock) {
+                    try { await session.sock.logout(); } catch (e) {}
+                    try { session.sock.end(); } catch (e) {}
+                }
+            } catch (e) {}
+            this.sessions.delete(numId);
+        }
+
+        const acc = db.getWhatsAppAccount(numId);
+        if (acc?.session_id === 'default' || numId === 1) {
+            await this.clearSession();
+        }
+
+        db.db.prepare("UPDATE whatsapp_accounts SET status = 'DISCONNECTED' WHERE id = ?").run(numId);
+        return { success: true, accountId: numId, status: 'DISCONNECTED' };
+    }
+
+    /**
+     * Delete an account and its credentials permanently
+     */
+    async deleteAccount(accountId) {
+        await this.disconnectAccount(accountId);
+        const numId = parseInt(accountId, 10);
+        const sessionDir = path.join(this.sessionsDir, `session_${numId}`);
+        if (fs.existsSync(sessionDir)) {
+            try { fs.rmSync(sessionDir, { recursive: true, force: true }); } catch (e) {}
+        }
+        db.deleteWhatsAppAccount(numId);
+        return { success: true, deleted: true, accountId: numId };
+    }
+
+    /**
+     * Resolve active socket for given accountId (or default)
+     */
+    getSocketForAccount(accountId = null) {
+        if (accountId) {
+            const numId = parseInt(accountId, 10);
+            const session = this.sessions.get(numId) || this.sessions.get(String(accountId));
+            if (session && session.sock && session.status === 'CONNECTED') {
+                return session.sock;
+            }
+        }
+
+        // Fallback: check default socket
+        if (this.sock && this.status === 'CONNECTED') {
+            return this.sock;
+        }
+
+        // Fallback: check any connected session in sessions map
+        for (const [id, session] of this.sessions.entries()) {
+            if (session && session.sock && session.status === 'CONNECTED') {
+                return session.sock;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -367,10 +597,11 @@ class BaileysProvider extends MessagingProvider {
     }
 
     /**
-     * Send Real WhatsApp text message
+     * Send Real WhatsApp text message through chosen account
      */
-    async sendText(phone, message) {
-        if (this.status !== 'CONNECTED' || !this.sock) {
+    async sendText(phone, message, accountId = null) {
+        const sock = this.getSocketForAccount(accountId);
+        if (!sock) {
             throw new Error('WhatsApp is not connected yet! Please scan the QR code in the dashboard to connect your WhatsApp account.');
         }
 
@@ -382,9 +613,14 @@ class BaileysProvider extends MessagingProvider {
         const jid = `${digits}@s.whatsapp.net`;
 
         try {
-            const result = await this.sock.sendMessage(jid, { text: message });
+            const result = await sock.sendMessage(jid, { text: message });
             const messageId = result?.key?.id || `wa_${Date.now()}`;
             console.log(`[Local WhatsApp] Real message sent to +${digits} (ID: ${messageId})`);
+
+            // Increment stats on account if specified
+            if (accountId) {
+                db.updateWhatsAppAccountStats(accountId, { sentDelta: 1 });
+            }
 
             return {
                 id: messageId,
@@ -394,15 +630,19 @@ class BaileysProvider extends MessagingProvider {
             };
         } catch (err) {
             console.error(`[Local WhatsApp] Failed to send message to +${digits}:`, err.message);
+            if (accountId) {
+                db.updateWhatsAppAccountStats(accountId, { failedDelta: 1, error: err.message });
+            }
             throw new Error(`WhatsApp delivery failed to +${digits}: ${err.message}`);
         }
     }
 
     /**
-     * Send Real WhatsApp media message (Image with optional caption)
+     * Send Real WhatsApp media message (Image with optional caption) through chosen account
      */
-    async sendMedia(phone, mediaUrl, caption = '') {
-        if (this.status !== 'CONNECTED' || !this.sock) {
+    async sendMedia(phone, mediaUrl, caption = '', accountId = null) {
+        const sock = this.getSocketForAccount(accountId);
+        if (!sock) {
             throw new Error('WhatsApp is not connected yet! Please scan the QR code in the dashboard to connect your WhatsApp account.');
         }
 
@@ -439,9 +679,13 @@ class BaileysProvider extends MessagingProvider {
                 caption: caption || ''
             };
 
-            const result = await this.sock.sendMessage(jid, messageContent);
+            const result = await sock.sendMessage(jid, messageContent);
             const messageId = result?.key?.id || `wa_media_${Date.now()}`;
             console.log(`[Local WhatsApp] Real media sent to +${digits} (ID: ${messageId})`);
+
+            if (accountId) {
+                db.updateWhatsAppAccountStats(accountId, { sentDelta: 1 });
+            }
 
             return {
                 id: messageId,
@@ -451,24 +695,84 @@ class BaileysProvider extends MessagingProvider {
             };
         } catch (err) {
             console.error(`[Local WhatsApp] Media send error to +${digits}:`, err.message);
+            if (accountId) {
+                db.updateWhatsAppAccountStats(accountId, { failedDelta: 1, error: err.message });
+            }
             throw new Error(`WhatsApp media delivery failed to +${digits}: ${err.message}`);
         }
     }
 
     /**
-     * Disconnect and clear local session
+     * Request an 8-character Pairing Code to link WhatsApp using phone number
+     */
+    async requestPairingCode(phoneNumber, customCode = null) {
+        let cleanDigits = String(phoneNumber || '').replace(/[^0-9]/g, '');
+
+        if (!cleanDigits || cleanDigits.length < 8 || cleanDigits.length > 15) {
+            throw new Error('Please enter a valid phone number with country code (8 to 15 digits).');
+        }
+
+        if (this.status === 'CONNECTED' && this.sock) {
+            return {
+                success: true,
+                status: 'CONNECTED',
+                phone: this.connectedPhone,
+                name: this.connectedName,
+                message: `WhatsApp is already connected as ${this.connectedPhone}`
+            };
+        }
+
+        this.pairingCode = null;
+        this.pairingPhone = cleanDigits;
+
+        if (!this.sock || !this.sock.ws || !this.sock.ws.isOpen) {
+            this.isConnecting = false;
+            await this.connect(false).catch(e => console.warn('[Local WhatsApp] Connect notice:', e.message));
+        }
+
+        if (this.sock) {
+            try {
+                await this.sock.waitForSocketOpen();
+            } catch (waitErr) {
+                console.warn('[Local WhatsApp] waitForSocketOpen notice:', waitErr.message);
+            }
+        }
+
+        if (!this.sock) {
+            throw new Error('Socket failed to initialize. Please check your internet connection and try again.');
+        }
+
+        try {
+            let cleanCustomCode = null;
+            if (customCode) {
+                cleanCustomCode = String(customCode).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                if (cleanCustomCode.length !== 8) cleanCustomCode = null;
+            }
+
+            const rawCode = await this.sock.requestPairingCode(cleanDigits, cleanCustomCode || undefined);
+            const formattedCode = rawCode ? (rawCode.match(/.{1,4}/g)?.join('-') || rawCode) : rawCode;
+
+            this.pairingCode = formattedCode;
+            this.status = 'PAIRING_CODE';
+
+            return {
+                success: true,
+                pairingCode: formattedCode,
+                phone: `+${cleanDigits}`,
+                status: this.status
+            };
+        } catch (err) {
+            throw new Error(`Failed to request code from WhatsApp: ${err.message}`);
+        }
+    }
+
+    /**
+     * Disconnect default session
      */
     async disconnect() {
-        try {
-            await this.clearSession();
-            console.log('[Local WhatsApp] Disconnected and session cleared.');
-            return { success: true, message: 'Disconnected successfully' };
-        } catch (err) {
-            console.error('[Local WhatsApp] Disconnect error:', err.message);
-            throw err;
-        }
+        return this.clearSession();
     }
 }
 
-// Export singleton instance so connection is shared across all requests
+// Export singleton instance
 module.exports = new BaileysProvider();

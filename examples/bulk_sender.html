@@ -2067,21 +2067,22 @@
         </section>
 
         <!-- ============================================================== -->
-        <!-- VIEW 1.5: MULTIPLE WHATSAPP BUSINESS NUMBERS (MULTI-ACCOUNT)   -->
+        <!-- ============================================================== -->
+        <!-- VIEW 1.5: MULTIPLE WHATSAPP ACCOUNTS (QR CODE SCAN)           -->
         <!-- ============================================================== -->
         <section id="view-numbers" class="content-view">
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                     <div>
-                        <h2 class="card-title">Authorized WhatsApp Business Numbers</h2>
-                        <p class="card-desc">Connect multiple official WhatsApp Business numbers. Each number maintains its own credentials, Phone Number ID, queue, delivery stats, and error logs.</p>
+                        <h2 class="card-title">Connected WhatsApp Accounts (QR Code)</h2>
+                        <p class="card-desc">Scan QR code to connect and save multiple WhatsApp numbers. Run individual campaigns through any connected number.</p>
                     </div>
                     <div style="display:flex; gap:10px; align-items:center;">
                         <button type="button" class="btn btn-secondary" id="btnRefreshAccounts" style="padding:8px 16px; font-size:13px;">
-                            <span>🔄 Refresh Stats</span>
+                            <span>🔄 Refresh Status</span>
                         </button>
                         <button type="button" class="btn btn-primary" id="btnOpenAddAccountModal" style="padding:8px 20px; font-size:13px;">
-                            <span>➕ Connect Number</span>
+                            <span>➕ Connect WhatsApp via QR</span>
                         </button>
                     </div>
                 </div>
@@ -2089,19 +2090,19 @@
                 <!-- Guidance Info Box -->
                 <div style="background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:14px 18px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="font-size:20px;">🛡️</span>
+                        <span style="font-size:22px;">📱</span>
                         <div style="font-size:13px; color:var(--text-body);">
-                            <strong style="color:var(--text-heading);">Account Isolation & Credential Security:</strong>
-                            Campaign queues run independently per business number. Access tokens are encrypted and never exposed in client scripts.
+                            <strong style="color:var(--text-heading);">Multi-Account WhatsApp Web:</strong>
+                            Each phone number maintains its own private, isolated multi-device connection. Select any connected number when creating a campaign.
                         </div>
                     </div>
-                    <span class="badge-official">Meta Cloud API Multi-Number</span>
+                    <span class="badge-official" style="background:var(--wa-light-green); color:var(--wa-dark-teal); border-color:var(--wa-teal);">Direct Multi-Device</span>
                 </div>
 
                 <!-- WhatsApp Numbers Grid -->
                 <div id="gridWhatsAppAccounts" class="accounts-grid">
                     <div style="grid-column:1/-1; text-align:center; padding:36px; color:var(--text-muted); font-size:14px;">
-                        Loading connected WhatsApp Business numbers...
+                        Loading connected WhatsApp numbers...
                     </div>
                 </div>
             </div>
@@ -2296,15 +2297,20 @@
                             </div>
                         </div>
 
-                        <!-- 3. WhatsApp Business Number Selector (Accounts) -->
-                        <div class="form-group" id="boxCampaignAccountSelect" style="display:none; background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:14px 16px;">
-                            <label class="form-label" style="font-weight:700; color:var(--text-heading);">
-                                📱 WhatsApp Business Number (Queue Account)
-                            </label>
+                        <!-- 3. WhatsApp Number Selector (Multi-Account) -->
+                        <div class="form-group" id="boxCampaignAccountSelect" style="background:var(--bg-subtle); border:1.5px solid var(--border-color); border-radius:var(--radius-md); padding:14px 16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                                <label class="form-label" style="font-weight:700; color:var(--text-heading); margin-bottom:0;">
+                                    📱 Send From WhatsApp Number
+                                </label>
+                                <button type="button" class="btn btn-secondary" onclick="openAddAccountModal()" style="padding:4px 10px; font-size:11.5px;">
+                                    ➕ Link Another Number
+                                </button>
+                            </div>
                             <select id="selectCampaignAccount" class="input-text" style="width:100%; font-weight:600;">
-                                <option value="">-- Primary Active WhatsApp Account --</option>
+                                <option value="">-- Primary Connected WhatsApp Number --</option>
                             </select>
-                            <p class="form-hint">Messages in this campaign will be dispatched strictly through the selected authorized number.</p>
+                            <p class="form-hint" style="margin-top:6px; margin-bottom:0;">Campaign will be dispatched through this number. Logs and delivery counts are tracked per number.</p>
                         </div>
 
                         <!-- 4. Approved Meta Templates Selector -->
@@ -2580,64 +2586,52 @@
             </div>
         </section>
 
-        <!-- Add / Edit WhatsApp Account Modal -->
+        <!-- Add WhatsApp Account via QR Modal -->
         <div class="modal-overlay" id="modalAccountOverlay">
-            <div class="modal-dialog">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--border-subtle); padding-bottom:12px;">
-                    <h3 style="font-size:17px; font-weight:700; color:var(--text-heading);" id="modalAccountTitle">Connect WhatsApp Business Number</h3>
+            <div class="modal-dialog" style="max-width:440px; text-align:center;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--border-subtle); padding-bottom:12px;">
+                    <h3 style="font-size:17px; font-weight:700; color:var(--text-heading);" id="modalAccountTitle">Connect WhatsApp via QR Code</h3>
                     <button type="button" class="copy-btn" id="btnCloseAccountModal" style="border:none; font-size:18px; cursor:pointer;">✕</button>
                 </div>
 
-                <form id="formAccountEdit">
-                    <input type="hidden" id="modalAccId" value="" />
-                    
-                    <div class="form-group">
-                        <label class="form-label">Friendly Account Name <span style="color:var(--danger)">*</span></label>
-                        <input type="text" class="input-text" id="modalAccName" placeholder="e.g. Sales Team #1 or Support Helpline" required />
-                    </div>
+                <div id="modalQrBody">
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                        Scan this QR code with WhatsApp on your phone to link a WhatsApp number for sending campaigns.
+                    </p>
 
-                    <div class="form-group">
-                        <label class="form-label">Phone Number ID <span style="color:var(--danger)">*</span></label>
-                        <input type="text" class="input-text" id="modalAccPhoneId" placeholder="e.g. 102938475610293" required />
-                        <p class="form-hint">Obtained from Meta App &gt; WhatsApp &gt; API Setup &gt; Phone Number ID</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">WhatsApp Business Account ID (WABA ID)</label>
-                        <input type="text" class="input-text" id="modalAccWabaId" placeholder="e.g. 109876543210987" />
-                        <p class="form-hint">Used for template synchronization and account quality monitoring</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Display Phone Number (Optional)</label>
-                        <input type="text" class="input-text" id="modalAccPhone" placeholder="e.g. +1 555-0199" />
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">System User Access Token <span style="color:var(--danger)">*</span></label>
-                        <div class="input-with-action">
-                            <input type="password" class="input-text" id="modalAccToken" placeholder="Paste Meta System User Access Token" required />
-                            <button type="button" class="copy-btn" id="btnToggleModalToken">👁️</button>
+                    <!-- QR Code Display Box -->
+                    <div style="background:var(--bg-subtle); border:1.5px dashed var(--border-color); border-radius:var(--radius-lg); padding:20px; display:inline-flex; flex-direction:column; align-items:center; justify-content:center; min-height:260px; min-width:260px; margin:0 auto 16px auto;">
+                        <div id="modalQrLoadingState" style="display:flex; flex-direction:column; align-items:center; gap:12px; color:var(--text-muted);">
+                            <span class="spinner" style="width:36px; height:36px;"></span>
+                            <span id="modalQrLoadingText" style="font-size:13px; font-weight:600;">Generating QR code...</span>
                         </div>
-                        <p class="form-hint">Saved securely in private SQLite backend. Never sent back unmasked to browser.</p>
+                        <img id="modalQrCodeImg" src="" alt="WhatsApp QR Code" style="display:none; width:220px; height:220px; border-radius:12px; object-fit:contain; background:#ffffff; padding:10px; box-shadow:0 4px 14px rgba(0,0,0,0.15);" />
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Meta Graph API Version</label>
-                        <select class="input-text" id="modalAccApiVersion" style="width:100%;">
-                            <option value="v22.0">v22.0 (Latest Official)</option>
-                            <option value="v21.0">v21.0</option>
-                            <option value="v20.0">v20.0</option>
-                        </select>
-                    </div>
-
-                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px; border-top:1px solid var(--border-subtle); padding-top:16px;">
-                        <button type="button" class="btn btn-secondary" id="btnCancelAccountModal">Cancel</button>
-                        <button type="submit" class="btn btn-primary" id="btnSaveAccountModal">
-                            <span>Save & Connect Number</span>
+                    <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:14px;">
+                        <span id="modalQrStatusBadge" style="font-size:12px; font-weight:700; padding:4px 12px; border-radius:var(--radius-full); background:var(--bg-subtle); color:var(--text-muted); border:1px solid var(--border-color);">
+                            ⏳ Waiting for WhatsApp scan
+                        </span>
+                        <button type="button" class="btn btn-secondary" id="btnRefreshModalQr" style="padding:4px 10px; font-size:12px;" title="Refresh QR code">
+                            <span>🔄 Refresh QR</span>
                         </button>
                     </div>
-                </form>
+
+                    <!-- Step-by-step instructions -->
+                    <div style="text-align:left; background:var(--bg-subtle); border-radius:var(--radius-md); padding:12px 16px; font-size:12px; color:var(--text-body); margin-bottom:16px;">
+                        <div style="font-weight:700; color:var(--text-heading); margin-bottom:6px;">📲 How to scan:</div>
+                        <ol style="margin:0; padding-left:18px; line-height:1.6;">
+                            <li>Open <strong>WhatsApp</strong> on your phone</li>
+                            <li>Tap <strong>Settings</strong> or <strong>Menu (⋮)</strong> &gt; <strong>Linked Devices</strong></li>
+                            <li>Tap <strong>Link a Device</strong></li>
+                            <li>Point your camera at this QR code to scan</li>
+                        </ol>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid var(--border-subtle); padding-top:14px;">
+                        <button type="button" class="btn btn-secondary" id="btnCancelAccountModal">Close</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -3071,11 +3065,13 @@
             const selectAcc = document.getElementById('selectCampaignAccount');
             if (!selectAcc) return;
             const currentVal = selectAcc.value;
-            selectAcc.innerHTML = '<option value="">-- Primary Active WhatsApp Account --</option>' +
+            selectAcc.innerHTML = '<option value="">-- Primary Connected WhatsApp Number --</option>' +
                 accounts.map(acc => {
-                    const statusText = acc.status === 'ACTIVE' ? '🟢 Active' : '⚪ ' + acc.status;
-                    const phoneText = acc.phone_number ? ` (+${acc.phone_number})` : '';
-                    return `<option value="${acc.id}">${escapeHtml(acc.name)}${phoneText} [ID: ${acc.phone_number_id}] - ${statusText}</option>`;
+                    const isConn = acc.status === 'CONNECTED';
+                    const statusIcon = isConn ? '🟢' : '⚪';
+                    const defaultTag = acc.is_default ? ' ★ [Primary]' : '';
+                    const phoneDisplay = acc.phone_number ? ` (+${acc.phone_number.replace(/^\+/, '')})` : '';
+                    return `<option value="${acc.id}">${statusIcon} ${escapeHtml(acc.name)}${phoneDisplay}${defaultTag}</option>`;
                 }).join('');
             if (currentVal) selectAcc.value = currentVal;
         }
@@ -3087,11 +3083,11 @@
             if (!accounts.length) {
                 grid.innerHTML = `
                     <div style="grid-column:1/-1; text-align:center; padding:40px; background:var(--bg-subtle); border-radius:var(--radius-lg); border:1.5px dashed var(--border-color);">
-                        <div style="font-size:32px; margin-bottom:12px;">📱</div>
-                        <h3 style="font-size:16px; font-weight:700; color:var(--text-heading); margin-bottom:6px;">No WhatsApp Business Numbers Connected</h3>
-                        <p style="font-size:13px; color:var(--text-muted); max-width:440px; margin:0 auto 16px auto;">Connect your official WhatsApp Business accounts using their Phone Number ID and Meta System User Token to send campaigns.</p>
+                        <div style="font-size:36px; margin-bottom:12px;">📱</div>
+                        <h3 style="font-size:16px; font-weight:700; color:var(--text-heading); margin-bottom:6px;">No WhatsApp Numbers Connected</h3>
+                        <p style="font-size:13px; color:var(--text-muted); max-width:440px; margin:0 auto 16px auto;">Scan a QR code from WhatsApp on your phone to link a sending line. You can connect and manage multiple numbers.</p>
                         <button type="button" class="btn btn-primary" onclick="openAddAccountModal()">
-                            <span>➕ Connect Your First Number</span>
+                            <span>➕ Connect WhatsApp via QR</span>
                         </button>
                     </div>
                 `;
@@ -3099,50 +3095,43 @@
             }
 
             grid.innerHTML = accounts.map(acc => {
-                const isActive = acc.status === 'ACTIVE';
-                const statusPill = isActive
-                    ? `<span style="font-size:11px; font-weight:800; padding:2px 10px; border-radius:var(--radius-full); background:var(--wa-light-green); color:var(--wa-dark-teal); border:1px solid rgba(37,211,102,0.3);">ACTIVE</span>`
-                    : `<span style="font-size:11px; font-weight:800; padding:2px 10px; border-radius:var(--radius-full); background:#fee2e2; color:#991b1b; border:1px solid #fecaca;">${escapeHtml(acc.status)}</span>`;
+                const isConnected = acc.status === 'CONNECTED';
+                const statusPill = isConnected
+                    ? `<span style="font-size:11px; font-weight:800; padding:2px 10px; border-radius:var(--radius-full); background:var(--wa-light-green); color:var(--wa-dark-teal); border:1px solid rgba(37,211,102,0.3);">🟢 CONNECTED</span>`
+                    : `<span style="font-size:11px; font-weight:800; padding:2px 10px; border-radius:var(--radius-full); background:#fee2e2; color:#991b1b; border:1px solid #fecaca;">⚪ DISCONNECTED</span>`;
 
-                const qualityColors = {
-                    'GREEN': '#059669',
-                    'YELLOW': '#d97706',
-                    'RED': '#dc2626',
-                    'UNKNOWN': '#64748b'
-                };
-                const qColor = qualityColors[acc.quality_rating] || '#64748b';
-                const qualityBadge = `<span style="font-size:11px; font-weight:700; color:${qColor}; display:inline-flex; align-items:center; gap:5px;"><span style="width:7px; height:7px; border-radius:50%; background:${qColor};"></span> Quality: ${escapeHtml(acc.quality_rating || 'UNKNOWN')}</span>`;
-
-                const errorBox = acc.error_message
-                    ? `<div style="padding:8px 12px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; font-size:11.5px; color:#b91c1c; word-break:break-word; margin-top:8px;"><strong>Error:</strong> ${escapeHtml(acc.error_message)}</div>`
+                const primaryBadge = acc.is_default
+                    ? `<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:rgba(234, 179, 8, 0.15); color:#eab308; border:1px solid rgba(234,179,8,0.3);">⭐ Primary Line</span>`
                     : '';
+
+                const formattedPhone = acc.phone_number
+                    ? (acc.phone_number.startsWith('+') ? acc.phone_number : '+' + acc.phone_number)
+                    : 'Linked via QR';
 
                 return `
                     <div class="account-card" id="accountCard-${acc.id}">
                         <div>
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                                <div>
-                                    <h3 style="font-size:16px; font-weight:800; color:var(--text-heading);">${escapeHtml(acc.name)}</h3>
-                                    <div style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">
-                                        ${acc.phone_number ? '+' + escapeHtml(acc.phone_number) : 'ID: ' + escapeHtml(acc.phone_number_id)}
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:40px; height:40px; border-radius:10px; background:var(--bg-subtle); display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid var(--border-color);">
+                                        📱
+                                    </div>
+                                    <div>
+                                        <h3 style="font-size:16px; font-weight:800; color:var(--text-heading); margin-bottom:2px;">${escapeHtml(acc.name || 'WhatsApp Account')}</h3>
+                                        <div style="font-size:13px; font-weight:600; color:var(--text-body); font-family:'JetBrains Mono',monospace;">
+                                            ${escapeHtml(formattedPhone)}
+                                        </div>
                                     </div>
                                 </div>
                                 <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
                                     ${statusPill}
-                                    ${qualityBadge}
+                                    ${primaryBadge}
                                 </div>
                             </div>
 
-                            <div style="background:var(--bg-subtle); padding:10px 12px; border-radius:var(--radius-md); font-size:12px; margin-bottom:12px; font-family:'JetBrains Mono',monospace;">
-                                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                                    <span style="color:var(--text-muted);">Phone ID:</span>
-                                    <span style="color:var(--text-heading); font-weight:600;">${escapeHtml(acc.phone_number_id)}</span>
-                                </div>
-                                ${acc.business_account_id ? `
-                                <div style="display:flex; justify-content:space-between;">
-                                    <span style="color:var(--text-muted);">WABA ID:</span>
-                                    <span style="color:var(--text-heading); font-weight:600;">${escapeHtml(acc.business_account_id)}</span>
-                                </div>` : ''}
+                            <div style="background:var(--bg-subtle); padding:8px 12px; border-radius:var(--radius-md); font-size:11.5px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border-subtle);">
+                                <span style="color:var(--text-muted);">Session Type:</span>
+                                <span style="color:var(--text-heading); font-weight:600;">WhatsApp Web Multi-Device</span>
                             </div>
 
                             <!-- Sending Statistics -->
@@ -3160,22 +3149,22 @@
                                     <div style="font-size:11px; font-weight:600; color:var(--text-muted);">Failed</div>
                                 </div>
                             </div>
-
-                            ${errorBox}
                         </div>
 
                         <!-- Card Action Buttons -->
                         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; border-top:1px solid var(--border-subtle); padding-top:12px;">
-                            <button type="button" class="btn btn-secondary" onclick="testAccountConnection(${acc.id})" style="padding:6px 12px; font-size:12px;" title="Test Meta API credentials">
-                                <span>⚡ Test</span>
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="toggleAccountStatus(${acc.id})" style="padding:6px 12px; font-size:12px;">
-                                <span>${isActive ? '⏸️ Disable' : '▶️ Enable'}</span>
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="openEditAccountModal(${acc.id})" style="padding:6px 12px; font-size:12px;">
-                                <span>✏️ Edit</span>
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="deleteAccount(${acc.id})" style="padding:6px 10px; font-size:12px; color:var(--danger); border-color:var(--danger);" title="Remove number">
+                            ${!acc.is_default ? `
+                            <button type="button" class="btn btn-secondary" onclick="makeAccountDefault(${acc.id})" style="padding:6px 12px; font-size:12px;" title="Set as primary sending line">
+                                <span>⭐ Make Primary</span>
+                            </button>` : ''}
+                            ${isConnected ? `
+                            <button type="button" class="btn btn-secondary" onclick="disconnectAccount(${acc.id})" style="padding:6px 12px; font-size:12px;">
+                                <span>🔌 Disconnect</span>
+                            </button>` : `
+                            <button type="button" class="btn btn-primary" onclick="openAddAccountModal()" style="padding:6px 12px; font-size:12px;">
+                                <span>📲 Reconnect QR</span>
+                            </button>`}
+                            <button type="button" class="btn btn-secondary" onclick="deleteAccount(${acc.id})" style="padding:6px 10px; font-size:12px; color:var(--danger); border-color:var(--danger);" title="Remove account">
                                 <span>🗑️</span>
                             </button>
                         </div>
@@ -3184,124 +3173,130 @@
             }).join('');
         }
 
-        // Account Modal Handlers
+        // Account Modal Handlers (QR Code Scanner)
         const modalAccountOverlay = document.getElementById('modalAccountOverlay');
-        const formAccountEdit = document.getElementById('formAccountEdit');
-        const modalAccId = document.getElementById('modalAccId');
-        const modalAccName = document.getElementById('modalAccName');
-        const modalAccPhoneId = document.getElementById('modalAccPhoneId');
-        const modalAccWabaId = document.getElementById('modalAccWabaId');
-        const modalAccPhone = document.getElementById('modalAccPhone');
-        const modalAccToken = document.getElementById('modalAccToken');
-        const modalAccApiVersion = document.getElementById('modalAccApiVersion');
-        const modalAccountTitle = document.getElementById('modalAccountTitle');
-        const btnToggleModalToken = document.getElementById('btnToggleModalToken');
+        const modalQrLoadingState = document.getElementById('modalQrLoadingState');
+        const modalQrLoadingText = document.getElementById('modalQrLoadingText');
+        const modalQrCodeImg = document.getElementById('modalQrCodeImg');
+        const modalQrStatusBadge = document.getElementById('modalQrStatusBadge');
+        const btnRefreshModalQr = document.getElementById('btnRefreshModalQr');
 
-        btnToggleModalToken?.addEventListener('click', () => {
-            if (modalAccToken.type === 'password') {
-                modalAccToken.type = 'text';
-                btnToggleModalToken.textContent = '🔒';
-            } else {
-                modalAccToken.type = 'password';
-                btnToggleModalToken.textContent = '👁️';
-            }
-        });
+        let qrPollInterval = null;
 
-        function openAddAccountModal() {
-            if (!formAccountEdit) return;
-            formAccountEdit.reset();
-            modalAccId.value = '';
-            modalAccountTitle.textContent = 'Connect WhatsApp Business Number';
-            modalAccToken.required = true;
+        async function openAddAccountModal() {
+            if (!modalAccountOverlay) return;
             modalAccountOverlay.classList.add('active');
-        }
-
-        function openEditAccountModal(id) {
-            const acc = cachedAccounts.find(a => a.id === id);
-            if (!acc) return;
-            modalAccId.value = acc.id;
-            modalAccName.value = acc.name || '';
-            modalAccPhoneId.value = acc.phone_number_id || '';
-            modalAccWabaId.value = acc.business_account_id || '';
-            modalAccPhone.value = acc.phone_number || '';
-            modalAccToken.value = '';
-            modalAccToken.required = false;
-            modalAccToken.placeholder = 'Leave blank to keep existing encrypted token';
-            if (acc.api_version) modalAccApiVersion.value = acc.api_version;
-            modalAccountTitle.textContent = `Edit Account: ${acc.name}`;
-            modalAccountOverlay.classList.add('active');
+            await generateModalQr();
         }
 
         function closeAccountModal() {
-            modalAccountOverlay.classList.remove('active');
+            if (modalAccountOverlay) modalAccountOverlay.classList.remove('active');
+            if (qrPollInterval) {
+                clearInterval(qrPollInterval);
+                qrPollInterval = null;
+            }
         }
 
+        async function generateModalQr() {
+            if (qrPollInterval) clearInterval(qrPollInterval);
+
+            if (modalQrLoadingState) modalQrLoadingState.style.display = 'flex';
+            if (modalQrCodeImg) modalQrCodeImg.style.display = 'none';
+            if (modalQrLoadingText) modalQrLoadingText.textContent = 'Generating QR code...';
+            if (modalQrStatusBadge) {
+                modalQrStatusBadge.textContent = '⏳ Waiting for WhatsApp scan';
+                modalQrStatusBadge.style.color = 'var(--text-muted)';
+            }
+
+            try {
+                const res = await fetch('/api/whatsapp/accounts/new-qr', { method: 'POST' });
+                const data = await res.json();
+
+                if (data.success && data.qr) {
+                    if (modalQrLoadingState) modalQrLoadingState.style.display = 'none';
+                    if (modalQrCodeImg) {
+                        modalQrCodeImg.src = data.qr;
+                        modalQrCodeImg.style.display = 'block';
+                    }
+                    startQrStatusPolling();
+                } else if (data.status === 'CONNECTED') {
+                    if (modalQrLoadingState) modalQrLoadingState.style.display = 'none';
+                    if (modalQrStatusBadge) {
+                        modalQrStatusBadge.textContent = '✅ Already Connected!';
+                        modalQrStatusBadge.style.color = '#059669';
+                    }
+                    loadWhatsAppAccounts();
+                } else {
+                    if (modalQrLoadingText) modalQrLoadingText.textContent = 'Could not generate QR: ' + (data.error || 'Retry');
+                }
+            } catch (err) {
+                if (modalQrLoadingText) modalQrLoadingText.textContent = 'Error: ' + err.message;
+            }
+        }
+
+        function startQrStatusPolling() {
+            if (qrPollInterval) clearInterval(qrPollInterval);
+            qrPollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/whatsapp/accounts/new-qr/status');
+                    const data = await res.json();
+                    if (data.status === 'CONNECTED') {
+                        clearInterval(qrPollInterval);
+                        qrPollInterval = null;
+                        if (modalQrStatusBadge) {
+                            modalQrStatusBadge.textContent = `✅ Connected as ${data.phone || 'WhatsApp'}!`;
+                            modalQrStatusBadge.style.color = '#059669';
+                        }
+                        if (modalQrLoadingState) {
+                            modalQrLoadingState.style.display = 'flex';
+                            modalQrLoadingText.textContent = `Connected! Saving account...`;
+                        }
+                        if (modalQrCodeImg) modalQrCodeImg.style.display = 'none';
+
+                        setTimeout(() => {
+                            closeAccountModal();
+                            loadWhatsAppAccounts();
+                        }, 1200);
+                    } else if (data.qr && modalQrCodeImg && modalQrCodeImg.src !== data.qr) {
+                        modalQrCodeImg.src = data.qr;
+                    }
+                } catch (e) {
+                    console.error('QR status poll error:', e);
+                }
+            }, 2000);
+        }
+
+        btnRefreshModalQr?.addEventListener('click', generateModalQr);
         document.getElementById('btnOpenAddAccountModal')?.addEventListener('click', openAddAccountModal);
         document.getElementById('btnCloseAccountModal')?.addEventListener('click', closeAccountModal);
         document.getElementById('btnCancelAccountModal')?.addEventListener('click', closeAccountModal);
         document.getElementById('btnRefreshAccounts')?.addEventListener('click', loadWhatsAppAccounts);
 
-        formAccountEdit?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = modalAccId.value;
-            const payload = {
-                name: modalAccName.value.trim(),
-                phone_number_id: modalAccPhoneId.value.trim(),
-                business_account_id: modalAccWabaId.value.trim(),
-                phone_number: modalAccPhone.value.trim(),
-                api_version: modalAccApiVersion.value.trim()
-            };
-            if (modalAccToken.value.trim()) {
-                payload.access_token = modalAccToken.value.trim();
-            }
-
-            const url = id ? `/api/whatsapp/accounts/${id}` : '/api/whatsapp/accounts';
-            const method = id ? 'PUT' : 'POST';
-
+        async function makeAccountDefault(id) {
             try {
-                const res = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                const res = await fetch(`/api/whatsapp/accounts/${id}/default`, { method: 'POST' });
                 const data = await res.json();
-                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to save account');
-
-                closeAccountModal();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to set default account');
                 loadWhatsAppAccounts();
             } catch (err) {
-                alert('Account Save Error: ' + err.message);
-            }
-        });
-
-        async function testAccountConnection(id) {
-            try {
-                const res = await fetch(`/api/whatsapp/accounts/${id}/test`, { method: 'POST' });
-                const data = await res.json();
-                if (data.success) {
-                    alert(`✅ WhatsApp Business Number Connected Successfully!\n\nPhone: +${data.phone}\nDisplay Name: ${data.verifiedName || 'Verified'}\nQuality: ${data.qualityRating || 'GREEN'}\nCode Verification: ${data.codeVerificationStatus || 'VERIFIED'}`);
-                    loadWhatsAppAccounts();
-                } else {
-                    alert(`❌ WhatsApp API Connection Error:\n\n${data.error}\nType: ${data.errorCategory || 'Error'}`);
-                }
-            } catch (err) {
-                alert('Test connection error: ' + err.message);
+                alert('Error setting primary line: ' + err.message);
             }
         }
 
-        async function toggleAccountStatus(id) {
+        async function disconnectAccount(id) {
+            if (!confirm('Disconnect this WhatsApp line? You can scan QR code to reconnect anytime.')) return;
             try {
-                const res = await fetch(`/api/whatsapp/accounts/${id}/toggle`, { method: 'POST' });
+                const res = await fetch(`/api/whatsapp/accounts/${id}/disconnect`, { method: 'POST' });
                 const data = await res.json();
-                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to toggle account');
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to disconnect');
                 loadWhatsAppAccounts();
             } catch (err) {
-                alert('Toggle error: ' + err.message);
+                alert('Disconnect error: ' + err.message);
             }
         }
 
         async function deleteAccount(id) {
-            if (!confirm('Are you sure you want to remove this WhatsApp Business number configuration?')) return;
+            if (!confirm('Are you sure you want to remove this WhatsApp number and delete its saved credentials?')) return;
             try {
                 const res = await fetch(`/api/whatsapp/accounts/${id}`, { method: 'DELETE' });
                 const data = await res.json();
@@ -3888,7 +3883,7 @@
         function updateComposerProviderView() {
             const chosen = document.querySelector('input[name="campaignProvider"]:checked')?.value || 'web_qr';
             if (boxCampaignAccountSelect) {
-                boxCampaignAccountSelect.style.display = chosen === 'cloud_api' ? 'block' : 'none';
+                boxCampaignAccountSelect.style.display = 'block';
             }
             if (boxCloudTemplateSelect) {
                 boxCloudTemplateSelect.style.display = chosen === 'cloud_api' ? 'block' : 'none';
@@ -4059,7 +4054,7 @@
                 delaySeconds: delaySec,
                 provider: chosenProvider,
                 templateName: templateName,
-                whatsappAccountId: (chosenProvider === 'cloud_api' && selectCampaignAccount?.value) ? parseInt(selectCampaignAccount.value, 10) : null,
+                whatsappAccountId: selectCampaignAccount?.value ? parseInt(selectCampaignAccount.value, 10) : null,
                 batchSize: parseInt(inputBatchSize?.value, 10) || 20,
                 batchPauseMinutes: parseInt(inputBatchPause?.value, 10) || 10,
                 enablePersonalization: checkEnablePersonalization?.checked ? 1 : 0,

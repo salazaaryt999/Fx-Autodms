@@ -451,23 +451,48 @@ const server = http.createServer(async (req, res) => {
         // 7.5 WHATSAPP WEB & META CLOUD API ROUTES
         // ==========================================
         if (reqPath.startsWith('/api/whatsapp/')) {
-            // Multi-Number WhatsApp Accounts Management
+            // Multi-Number WhatsApp Accounts (QR Code & Multi-Device)
             if (reqPath === '/api/whatsapp/accounts' && req.method === 'GET') {
                 const accounts = db.getWhatsAppAccounts();
-                return sendJson(res, 200, { success: true, accounts });
+                // Augment with real-time socket connection status
+                const enriched = accounts.map(acc => {
+                    const hasLiveSocket = !!messaging.baileysProvider.getSocketForAccount(acc.id);
+                    return {
+                        ...acc,
+                        liveConnected: hasLiveSocket || (acc.session_id === 'default' && messaging.baileysProvider.status === 'CONNECTED'),
+                        status: (hasLiveSocket || (acc.session_id === 'default' && messaging.baileysProvider.status === 'CONNECTED')) ? 'CONNECTED' : (acc.status || 'DISCONNECTED')
+                    };
+                });
+                return sendJson(res, 200, { success: true, accounts: enriched });
+            }
+
+            // Start QR session to link a new WhatsApp number
+            if (reqPath === '/api/whatsapp/accounts/new-qr' && req.method === 'POST') {
+                try {
+                    const result = await messaging.baileysProvider.startNewQrSession();
+                    return sendJson(res, 200, { success: true, ...result });
+                } catch (err) {
+                    return sendJson(res, 500, { success: false, error: err.message });
+                }
+            }
+
+            // Poll status of the pending QR session
+            if (reqPath === '/api/whatsapp/accounts/new-qr/status' && req.method === 'GET') {
+                const status = messaging.baileysProvider.getPendingQrStatus();
+                return sendJson(res, 200, status);
             }
 
             if (reqPath === '/api/whatsapp/accounts' && req.method === 'POST') {
                 const body = await parseJsonBody(req);
                 try {
-                    const created = db.createWhatsAppAccount(body);
+                    const created = db.upsertQrAccount(body);
                     return sendJson(res, 201, { success: true, account: created });
                 } catch (err) {
                     return sendJson(res, 400, { success: false, error: err.message });
                 }
             }
 
-            const accountIdMatch = reqPath.match(/^\/api\/whatsapp\/accounts\/(\d+)(?:\/(test|toggle|templates))?$/);
+            const accountIdMatch = reqPath.match(/^\/api\/whatsapp\/accounts\/(\d+)(?:\/(test|toggle|templates|disconnect|default))?$/);
             if (accountIdMatch) {
                 const accId = parseInt(accountIdMatch[1], 10);
                 const subAction = accountIdMatch[2];
@@ -489,8 +514,18 @@ const server = http.createServer(async (req, res) => {
                 }
 
                 if (!subAction && req.method === 'DELETE') {
-                    const deleted = db.deleteWhatsAppAccount(accId);
-                    return sendJson(res, 200, { success: true, deleted });
+                    const result = await messaging.baileysProvider.deleteAccount(accId);
+                    return sendJson(res, 200, result);
+                }
+
+                if (subAction === 'disconnect' && req.method === 'POST') {
+                    const result = await messaging.baileysProvider.disconnectAccount(accId);
+                    return sendJson(res, 200, result);
+                }
+
+                if (subAction === 'default' && req.method === 'POST') {
+                    const updated = db.setDefaultWhatsAppAccount(accId);
+                    return sendJson(res, 200, { success: true, account: updated });
                 }
 
                 if (subAction === 'toggle' && req.method === 'POST') {
@@ -504,16 +539,12 @@ const server = http.createServer(async (req, res) => {
                 }
 
                 if (subAction === 'test' && req.method === 'POST') {
-                    const account = db.getWhatsAppAccount(accId, true);
-                    if (!account) return sendJson(res, 404, { success: false, error: 'Account not found' });
-                    const result = await messaging.cloudApiProvider.testConnection(account);
-                    return sendJson(res, result.success ? 200 : 400, result);
-                }
-
-                if (subAction === 'templates' && req.method === 'GET') {
-                    const refresh = parsedUrl.searchParams.get('refresh') === 'true';
-                    const result = await messaging.cloudApiProvider.fetchApprovedTemplates(refresh, accId);
-                    return sendJson(res, result.success ? 200 : 400, result);
+                    const hasSocket = !!messaging.baileysProvider.getSocketForAccount(accId);
+                    return sendJson(res, 200, {
+                        success: hasSocket,
+                        status: hasSocket ? 'CONNECTED' : 'DISCONNECTED',
+                        message: hasSocket ? 'WhatsApp account is connected and ready.' : 'Account is disconnected.'
+                    });
                 }
             }
             // Webhook Verification (GET /api/whatsapp/webhook)

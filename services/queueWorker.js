@@ -197,10 +197,11 @@ class QueueWorker {
                         // WhatsApp Web / QR (Baileys) or Development Simulator
                         const provider = messaging.getProvider(targetMode);
                         try {
+                            const targetAccountId = job.whatsapp_account_id || null;
                             if (job.attachment) {
-                                sendResult = await provider.sendMedia(job.phone, job.attachment, job.message_body);
+                                sendResult = await provider.sendMedia(job.phone, job.attachment, job.message_body, targetAccountId);
                             } else {
-                                sendResult = await provider.sendText(job.phone, job.message_body);
+                                sendResult = await provider.sendText(job.phone, job.message_body, targetAccountId);
                             }
                         } catch (err) {
                             sendError = err;
